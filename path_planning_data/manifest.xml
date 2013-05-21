@@ -1,0 +1,15 @@
+<package>
+  <description brief="path_planning_data">
+
+     path_planning_data
+
+  </description>
+  <author>David!!</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/path_planning_data</url>
+  <depend package="map_server"/>
+
+</package>
+
+
