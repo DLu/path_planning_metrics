@@ -1,0 +1,17 @@
+<package>
+  <description brief="path_planning_simulation">
+
+     path_planning_simulation
+
+  </description>
+  <author>David!!</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/path_planning_simulation</url>
+  <depend package="gazebo"/>
+  <depend package="pr2_description"/>
+  <depend package="move_base"/>
+
+</package>
+
+
