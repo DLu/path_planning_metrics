@@ -9,8 +9,10 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/path_planning_simulation</url>
   <depend package="gazebo"/>
+  <depend package="gazebo_msgs"/>
   <depend package="pr2_description"/>
   <depend package="move_base"/>
+  <depend package="rospy"/>
 
 </package>
 
