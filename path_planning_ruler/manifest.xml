@@ -1,0 +1,16 @@
+<package>
+  <description brief="path_planning_ruler">
+
+     path_planning_ruler
+
+  </description>
+  <author>David Lu</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/path_planning_ruler</url>
+  <depend package="rospy"/>
+  <depend package="rosbag"/>
+
+</package>
+
+
