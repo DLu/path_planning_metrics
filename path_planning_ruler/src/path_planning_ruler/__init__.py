@@ -37,7 +37,7 @@ class MoveBaseClient:
 
     def getTransform(self):
         try:
-            pos, q = self.tf.lookupTransform(self.target_frame, self.base_frame, rospy.Time(0))
+            pos, q = self.tf.lookupTransform(self.base_frame, self.target_frame, rospy.Time(0))
             rpy = euler_from_quaternion(q)
         except tf.LookupException, tf.ExtrapolationException:
             return None
