@@ -4,16 +4,34 @@ import collections
 import pylab
 from math import sin, cos, sqrt
 
-def derivative(t, x, window=2):
+def smooth(x, window=2):
     N = window * 2 + 1
-    tarr = []
-    arr = []
-    for ti, xi in zip(t,x):
-        tarr.append(ti)
-        arr.append(xi)
-        while len(tarr) > N:
-            tarr = tarr[1:]
-            arr = arr[1:]
+    result = []
+    warr = []
+
+    for i, xi in enumerate(x):
+        warr.append(xi)
+        while len(warr) > N:
+            warr = warr[1:]
+
+        if len(warr) >= window + 1:
+            result.append(sum(warr)/len(warr))
+    for i in range(window):
+        warr = warr[1:]
+        result.append(sum(warr)/len(warr))
+
+    return result
+
+def derivative(t, x):
+    ds = []
+        
+    for i, (ti, xi) in enumerate(zip(t,x)):
+        if i>0:
+            ds.append((xi-x[i-1])/(ti-t[i-1]))
+        else:   
+            ds.append(0)
+    return ds
+        
 
 def dist(p1, p2):
     return sqrt( pow(p1.x-p2.x, 2) + pow(p1.y-p2.y, 2) )
@@ -45,9 +63,18 @@ class RobotPath:
             ts.append(t.to_sec())
             ds.append(dist(pose, prev))
             prev = pose
-        pylab.plot(ts, ds)
-        pylab.show()
         return ts, ds
+
+    def get_velocity(self):
+        ts, ds = self.get_displacement()
+        vs = []
+        
+        for i, (ti, xi) in enumerate(zip(ts,ds)):
+            if i>0:
+                vs.append(xi/(ti-ts[i-1]))
+            else:
+                vs.append(0)
+        return vs
 
     def plot(self):
         ax = pylab.axes()
@@ -73,12 +100,15 @@ class RobotPath:
 
         x =[]
         y =[]
+        z =[]
         ts=[]
         for t, pose in self.poses:
             ts.append(t.to_sec())
             x.append(pose.x)
             y.append(pose.y)
+            z.append(pose.theta)
         ax.plot(ts,x)
         ax.plot(ts,y)
+        ax.plot(ts,z)
         pylab.show()
         
