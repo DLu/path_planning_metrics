@@ -2,7 +2,8 @@ import roslib; roslib.load_manifest('path_planning_analysis')
 import rosbag
 import collections
 import pylab
-from math import sin, cos, sqrt
+from math import sin, cos, sqrt, pi
+PIx2 = pi * 2
 
 def smooth(x, window=2):
     N = window * 2 + 1
@@ -35,7 +36,11 @@ def derivative(t, x):
 
 def dist(p1, p2):
     return sqrt( pow(p1.x-p2.x, 2) + pow(p1.y-p2.y, 2) )
-        
+
+def a_dist(p1, p2):
+    diff = p1.theta - p2.theta
+    mod_diff = abs(diff % PIx2)
+    return min(mod_diff, PIx2-mod_diff)
 
 class RobotPath:
     def __init__(self, filename):
@@ -111,4 +116,24 @@ class RobotPath:
         ax.plot(ts,y)
         ax.plot(ts,z)
         pylab.show()
+
+    def translate_efficiency(self):
+        ts, ds = self.get_displacement()
+        D = sum(map(abs, ds))
+        D0 = dist(self.poses[0][1], self.poses[-1][1])
+        denom = 1 if D0 == 0 else D0
+        return (D-D0)/denom
+        
+    def rotate_efficiency(self):
+        p0 = None
+        A = 0.0
+        for t, pose in self.poses:
+            if not p0:
+                p0 = pose
+            A += abs(a_dist(p0, pose))
+            p0 = pose
+        A0 = a_dist(self.poses[0][1], self.poses[01][1])
+        denom =1 if A0 == 0 else A0
+        return (A-A0)/denom
+
         
