@@ -10,6 +10,8 @@
   <url>http://ros.org/wiki/path_planning_ruler</url>
   <depend package="rospy"/>
   <depend package="rosbag"/>
+  <depend package="move_base_msgs"/>
+  <depend package="path_planning_simulation"/>
 
 </package>
 
