@@ -1,0 +1,28 @@
+<launch>
+
+  <arg name="keyboard" default="True" />
+
+  <node pkg="pr2_teleop" type="teleop_pr2" name="pr2_teleop" unless="$(arg keyboard)">
+    <remap from="cmd_vel" to="base_controller/command" />
+    <rosparam file="$(find path_planning_teleop)/teleop.yaml" command="load" />
+  </node>
+  <node pkg="joy" type="joy_node" name="joy" unless="$(arg keyboard)" />
+        
+  <node pkg="pr2_teleop" type="teleop_pr2_keyboard" name="spawn_teleop_keyboard" output="screen"
+     if="$(arg keyboard)" >
+      <remap from="cmd_vel" to="base_controller/command" />
+
+      <param name="walk_vel" value="0.5" />
+      <param name="run_vel" value="1.0" />
+      <param name="yaw_rate" value="1.0" />
+      <param name="yaw_run_rate" value="1.5" />
+    </node>
+
+  <node name="fake_localization" pkg="fake_localization" type="fake_localization">
+      <param name="odom_frame_id" value="odom_combined" />
+  </node>
+
+  <node pkg="path_planning_teleop" name="teleop_recorder" type="recorder.py" output="screen"/>
+
+</launch>
+
