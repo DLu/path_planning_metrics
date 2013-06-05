@@ -3,6 +3,7 @@ import rospy
 from gazebo_msgs.srv import SetModelState, SpawnModel
 from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Pose
+from tf.transformations import quaternion_from_euler
 
 SET_STATE_NAME = '/gazebo/set_model_state'
 SPAWN_NAME = '/gazebo/spawn_urdf_model'
@@ -34,6 +35,18 @@ BOX = """
 </robot>
 """
 
+def get_pose(x, y, theta):
+    p = Pose()
+    p.position.x = x
+    p.position.y = y
+    q = quaternion_from_euler(0, 0, theta)
+    p.orientation.w = q[3]
+    p.orientation.x = q[0]
+    p.orientation.y = q[1]
+    p.orientation.z = q[2]
+    return p
+    
+
 class GazeboHelper:
     def __init__(self):
         rospy.wait_for_service(SET_STATE_NAME)
@@ -60,11 +73,6 @@ class GazeboHelper:
 if __name__=='__main__':
     rospy.init_node('gazebo_helper')
     g = GazeboHelper()
-    p = Pose()
-    p.position.x = 5
-    p.position.y = 2
-    p.position.z = 0
-    p.orientation.w = 1
-    g.set_state('pr2', p)
-    p.position.z = 2
-    g.spawn_model('boxx', BOX, p)
+    g.set_state('pr2', get_pose(0,0,0))
+    #p.position.z = 2
+    #g.spawn_model('boxx', BOX, p)
