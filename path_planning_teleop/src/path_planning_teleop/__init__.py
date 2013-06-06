@@ -41,15 +41,6 @@ class TeleopPathRecorder:
                 self.recording = True
         self.cmd_data.append( (rospy.Time.now(), '/base_controller/command', msg ))
 
-    def getTransform(self):
-        try:
-            pos, q = self.tf.lookupTransform(self.base_frame, self.target_frame, rospy.Time(0))
-            rpy = euler_from_quaternion(q)
-        except tf.LookupException, tf.ExtrapolationException:
-            return None
-        
-        return Pose2D(pos[0], pos[1], rpy[2])
-
     def goto(self, gx, gy, gt):
 
         # Create polygon
@@ -76,15 +67,17 @@ class TeleopPathRecorder:
         data = []
 
         # While not there
+
+
+
         while not rospy.is_shutdown():
             self.pub.publish(p)
 
-            tf = self.getTransform()
-            if tf is not None:
-                t = rospy.Time.now()
-                data.append((t,"/robot_pose", tf))
+            t, pose = get_time_and_pose(self.tf, self.base_frame, self.target_frame)
+            if pose is not None:
+                self.data.append((t,"/robot_pose", pose))
 
-                if close(tf, gx, gy, gt):
+                if close(pose, gx, gy, gt):
                     break
             rate.sleep()
 

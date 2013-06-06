@@ -12,6 +12,16 @@ from path_planning_simulation import *
 def finished(state):
     return state==GoalStatus.SUCCEEDED or state==GoalStatus.ABORTED or state==GoalStatus.PREEMPTED
 
+def get_time_and_pose(tf, f1, f2):
+    try:
+        t = tf.getLatestCommonTime(f1, f2)
+        pos, q = tf.lookupTransform(f1, f2, t)
+    except:
+        return None, None
+
+    rpy = euler_from_quaternion(q)
+    return t, Pose2D(pos[0], pos[1], rpy[2])
+
 class MoveBaseClient:
     def __init__(self, record_rate=5):
         self.tf = tf.TransformListener()
@@ -37,16 +47,6 @@ class MoveBaseClient:
 
         self.other_data.append( (rospy.Time.now(), topic, msg) )
 
-    def getTransform(self):
-        try:
-            t = self.tf.getLatestCommonTime(self.base_frame, self.target_frame)
-            pos, q = self.tf.lookupTransform(self.base_frame, self.target_frame, t)
-            rpy = euler_from_quaternion(q)
-        except:
-            return None, None
-        
-        return t, Pose2D(pos[0], pos[1], rpy[2])
-
     def goto(self, loc, debug=True):
         self.goal = loc
         q = quaternion_from_euler(0, 0, loc[2])
@@ -70,9 +70,9 @@ class MoveBaseClient:
             timer = rospy.Timer(rospy.Duration(5), self.print_distance)
 
         while not finished(self.ac.get_state()):
-            t, tf = self.getTransform()
-            if tf is not None:
-                self.data.append((t,"/robot_pose", tf))
+            t, pose = get_time_and_pose(self.tf, self.base_frame, self.target_frame)
+            if pose is not None:
+                self.data.append((t,"/robot_pose", pose))
             else:
                 print 'TF Error'
             rate.sleep()
@@ -87,10 +87,10 @@ class MoveBaseClient:
     def print_distance(self, event=None):
         if len(self.data)==0:
             return
-        tf = self.data[-1][2]
-        dx = abs(self.goal[0]-tf.x)
-        dy = abs(self.goal[1]-tf.y)
-        dt = abs(self.goal[2]-tf.theta)
+        pose = self.data[-1][2]
+        dx = abs(self.goal[0]-pose.x)
+        dy = abs(self.goal[1]-pose.y)
+        dt = abs(self.goal[2]-pose.theta)
         rospy.loginfo( "dx: %.2f dy: %.2f dt: %d"%(dx, dy, int(dt*180/3.141)) )
 
 def bag(filename, data):
