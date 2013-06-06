@@ -6,6 +6,8 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseFeedback
 from actionlib import SimpleActionClient
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Pose2D
+from nav_msgs.msg import Path
+from path_planning_simulation import *
 
 def finished(state):
     return state==GoalStatus.SUCCEEDED or state==GoalStatus.ABORTED or state==GoalStatus.PREEMPTED
@@ -37,14 +39,16 @@ class MoveBaseClient:
 
     def getTransform(self):
         try:
-            pos, q = self.tf.lookupTransform(self.base_frame, self.target_frame, rospy.Time(0))
+            t = self.tf.getLatestCommonTime(self.base_frame, self.target_frame)
+            pos, q = self.tf.lookupTransform(self.base_frame, self.target_frame, t)
             rpy = euler_from_quaternion(q)
         except:
-            return None
+            return None, None
         
-        return Pose2D(pos[0], pos[1], rpy[2])
+        return t, Pose2D(pos[0], pos[1], rpy[2])
 
-    def goto(self, loc):
+    def goto(self, loc, debug=True):
+        self.goal = loc
         q = quaternion_from_euler(0, 0, loc[2])
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = self.base_frame
@@ -57,25 +61,56 @@ class MoveBaseClient:
         goal.target_pose.pose.orientation.z = q[2]
 
         rate = rospy.Rate(self.record_rate)
-        data = []
+        self.data = []
         self.other_data = []
         self.recording = True
         self.ac.send_goal(goal)
 
+        if debug:
+            timer = rospy.Timer(rospy.Duration(5), self.print_distance)
+
         while not finished(self.ac.get_state()):
-            tf = self.getTransform()
+            t, tf = self.getTransform()
             if tf is not None:
-                t = rospy.Time.now()
-                data.append((t,"/robot_pose", tf))
+                self.data.append((t,"/robot_pose", tf))
+            else:
+                print 'TF Error'
             rate.sleep()
+
+        if debug:
+            timer.shutdown()
 
         self.recording = False
         rospy.sleep(1)
-        print len(self.other_data)
-        return data + self.other_data
+        return self.data + self.other_data
+
+    def print_distance(self, event=None):
+        if len(self.data)==0:
+            return
+        tf = self.data[-1][2]
+        dx = abs(self.goal[0]-tf.x)
+        dy = abs(self.goal[1]-tf.y)
+        dt = abs(self.goal[2]-tf.theta)
+        rospy.loginfo( "dx: %.2f dy: %.2f dt: %d"%(dx, dy, int(dt*180/3.141)) )
 
 def bag(filename, data):
     b = rosbag.Bag(filename, 'w')
     for time, topic, msg in sorted(data):
         b.write(topic, msg, t=time)
     b.close()
+
+def run_empty_room_test(filename, start=(0,0,0), end=(0,0,0)):
+    g = GazeboHelper()    
+    g.set_state('pr2', get_pose(start[0], start[1], start[2]))
+    rospy.sleep(1.0)
+
+    t = rospy.Time.now()
+
+    mb = MoveBaseClient()
+    mb.addSubscription('/move_base_node/NavfnROS/plan', Path)
+    mb.addSubscription('/move_base_node/DWAPlannerROS/local_plan', Path)
+    data = mb.goto(end)
+    data.append( (t, '/start', Pose2D(start[0], start[1], start[2])) )
+    data.append( (t, '/goal' , Pose2D(end[0],   end[1],   end[2])) )
+    bag(filename, data)
+
