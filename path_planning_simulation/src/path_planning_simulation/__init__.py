@@ -8,33 +8,6 @@ from tf.transformations import quaternion_from_euler
 SET_STATE_NAME = '/gazebo/set_model_state'
 SPAWN_NAME = '/gazebo/spawn_urdf_model'
 
-BOX = """
-<robot name="simple_box">
-  <link name="my_box">
-    <inertial>
-      <origin xyz="2 0 0" /> 
-      <mass value="1.0" />
-      <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="100.0"  iyz="0.0"  izz="1.0" />
-    </inertial>
-    <visual>
-      <origin xyz="2 0 1"/>
-      <geometry>
-        <box size="1 1 2" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="2 0 1"/>
-      <geometry>
-        <box size="1 1 2" />
-      </geometry>
-    </collision>
-  </link>
-  <gazebo reference="my_box">
-    <material>Gazebo/Blue</material>
-  </gazebo>
-</robot>
-"""
-
 def get_pose(x, y, theta):
     p = Pose()
     p.position.x = x
@@ -66,7 +39,7 @@ class GazeboHelper:
 
     def spawn_model(self, name, xml, pose, frame='/map', namespace=""):
         response = self.spawn_proxy(name, xml, namespace, pose, frame)
-        rospy.loginfo("S: %s | %s", "Success" if response.success else "Failure", response.status_message)
+        rospy.loginfo("SpawnModel: %s | %s", "Success" if response.success else "Failure", response.status_message)
 
 
 
