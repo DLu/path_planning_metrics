@@ -8,6 +8,7 @@ from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Pose2D
 from nav_msgs.msg import Path
 from path_planning_simulation import *
+import std_msgs.msg
 
 def finished(state):
     return state==GoalStatus.SUCCEEDED or state==GoalStatus.ABORTED or state==GoalStatus.PREEMPTED
@@ -109,8 +110,27 @@ def run_empty_room_test(filename, start=(0,0,0), end=(0,0,0)):
     mb = MoveBaseClient()
     mb.addSubscription('/move_base_node/NavfnROS/plan', Path)
     mb.addSubscription('/move_base_node/DWAPlannerROS/local_plan', Path)
+    mb.addSubscription('/collisions', std_msgs.msg.String)
     data = mb.goto(end)
     data.append( (t, '/start', Pose2D(start[0], start[1], start[2])) )
     data.append( (t, '/goal' , Pose2D(end[0],   end[1],   end[2])) )
     bag(filename, data)
 
+def run_scenario(scenario, filename):
+    g = GazeboHelper()
+    scenario.reset(g)
+    t = rospy.Time.now()
+    endpoints = []
+    endpoints.append( (t, '/start', scenario.start) )
+    endpoints.append( (t, '/goal' , scenario.goal ) )
+
+    mb = MoveBaseClient()
+    mb.addSubscription('/move_base_node/NavfnROS/plan', Path)
+    mb.addSubscription('/move_base_node/DWAPlannerROS/local_plan', Path)
+    mb.addSubscription('/collisions', std_msgs.msg.String)
+    goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
+
+    scenario.start_update_loop()
+    data = mb.goto(goal)
+    scenario.stop_update_loop()
+    bag(filename, endpoints + data)
