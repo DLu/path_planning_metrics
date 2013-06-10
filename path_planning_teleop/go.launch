@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="keyboard" default="True" />
+  <arg name="keyboard" default="False" />
 
   <node pkg="pr2_teleop" type="teleop_pr2" name="pr2_teleop" unless="$(arg keyboard)">
     <remap from="cmd_vel" to="base_controller/command" />
@@ -22,7 +22,7 @@
       <param name="odom_frame_id" value="odom_combined" />
   </node>
 
-  <node pkg="path_planning_teleop" name="teleop_recorder" type="recorder.py" output="screen"/>
+  <node pkg="path_planning_teleop" name="teleop_nav" type="teleop_nav_client.py" output="screen"/>
 
 </launch>
 
