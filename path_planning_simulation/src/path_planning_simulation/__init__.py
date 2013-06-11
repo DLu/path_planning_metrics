@@ -1,12 +1,13 @@
 import roslib; roslib.load_manifest('path_planning_simulation')
 import rospy
-from gazebo_msgs.srv import SetModelState, SpawnModel
+from gazebo_msgs.srv import SetModelState, SpawnModel, DeleteModel
 from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
 
 SET_STATE_NAME = '/gazebo/set_model_state'
 SPAWN_NAME = '/gazebo/spawn_urdf_model'
+DELETE_NAME = '/gazebo/delete_model'
 
 def get_pose(x, y, theta):
     p = Pose()
@@ -26,6 +27,8 @@ class GazeboHelper:
         self.state_proxy = rospy.ServiceProxy(SET_STATE_NAME, SetModelState)
         rospy.wait_for_service(SPAWN_NAME)
         self.spawn_proxy = rospy.ServiceProxy(SPAWN_NAME, SpawnModel)
+        rospy.wait_for_service(DELETE_NAME)
+        self.delete_proxy = rospy.ServiceProxy(DELETE_NAME, DeleteModel)
 
     def set_state(self, name, pose, twist=None, frame='/map'):
         state = ModelState()
@@ -41,7 +44,9 @@ class GazeboHelper:
         response = self.spawn_proxy(name, xml, namespace, pose, frame)
         rospy.loginfo("SpawnModel: %s | %s", "Success" if response.success else "Failure", response.status_message)
 
-
+    def delete_model(self, name):
+        response = self.delete_proxy(name)
+        rospy.loginfo("DeleteModel: %s | %s", "Success" if response.success else "Failure", response.status_message)
 
 if __name__=='__main__':
     rospy.init_node('gazebo_helper')
