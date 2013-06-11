@@ -118,6 +118,7 @@ def run_empty_room_test(filename, start=(0,0,0), end=(0,0,0)):
 
 def run_scenario(scenario, filename):
     g = GazeboHelper()
+    scenario.spawn(g)
     scenario.reset(g)
     t = rospy.Time.now()
     endpoints = []
@@ -133,4 +134,5 @@ def run_scenario(scenario, filename):
     scenario.start_update_loop()
     data = mb.goto(goal)
     scenario.stop_update_loop()
+    scenario.unspawn(g)
     bag(filename, endpoints + data)
