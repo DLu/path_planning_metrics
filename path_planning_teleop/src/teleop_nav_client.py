@@ -28,12 +28,12 @@ def close(pose, x, y, theta):
 
 class TeleopNavClient:
     def __init__(self):
+        rospy.set_param('/nav_experiments/topics', ['/base_controller/command'])
         self.tf = tf.TransformListener()
         self.target_frame = '/base_footprint'
         self.pub = rospy.Publisher('/goal_state', PolygonStamped, latch=True)
         self._as = actionlib.SimpleActionServer('/move_base', MoveBaseAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
-#'/base_controller/command'
 
     def execute_cb(self, goal):
         # Create polygon

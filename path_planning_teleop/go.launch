@@ -1,5 +1,7 @@
 <launch>
 
+  <param name="/nav_experiments/algorithm" value="teleop" />
+
   <arg name="keyboard" default="False" />
 
   <node pkg="pr2_teleop" type="teleop_pr2" name="pr2_teleop" unless="$(arg keyboard)">

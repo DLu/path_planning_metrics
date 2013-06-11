@@ -5,7 +5,7 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseFeedback
 from actionlib import SimpleActionClient
 from actionlib_msgs.msg import GoalStatus
-from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose2D, Twist
 from nav_msgs.msg import Path
 from path_planning_simulation import *
 import std_msgs.msg
@@ -65,6 +65,7 @@ class MoveBaseClient:
         self.data = []
         self.other_data = []
         self.recording = True
+        rospy.sleep(0.5)
         self.ac.send_goal(goal)
 
         if debug:
@@ -126,8 +127,17 @@ def run_scenario(scenario, filename):
     endpoints.append( (t, '/goal' , scenario.goal ) )
 
     mb = MoveBaseClient()
-    mb.addSubscription('/move_base_node/NavfnROS/plan', Path)
-    mb.addSubscription('/move_base_node/DWAPlannerROS/local_plan', Path)
+
+    #TODO: Load classes dynamically
+    topics = rospy.get_param('/nav_experiments/topics', [])
+    for topic in topics:
+        if 'plan' in topic:
+            print "Add", topic
+            mb.addSubscription(topic, Path)
+        elif 'command' in topic:
+            mb.addSubscription(topic, Twist)
+        else:
+            rospy.logerror("unknown type for", topic)
     mb.addSubscription('/collisions', std_msgs.msg.String)
     goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
 
