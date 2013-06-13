@@ -73,10 +73,10 @@ class RobotPath:
     def get_velocity(self):
         ts, ds = self.get_displacement()
         vs = []
-        
         for i, (ti, xi) in enumerate(zip(ts,ds)):
             if i>0:
-                vs.append(xi/(ti-ts[i-1]))
+                if ti-ts[i-1]>0:
+                    vs.append(xi/(ti-ts[i-1]))
             else:
                 vs.append(0)
         return vs
@@ -121,8 +121,7 @@ class RobotPath:
         ts, ds = self.get_displacement()
         D = sum(map(abs, ds))
         D0 = dist(self.poses[0][1], self.poses[-1][1])
-        denom = 1 if D0 == 0 else D0
-        return (D-D0)/denom
+        return 1/(1+(D-D0))
         
     def rotate_efficiency(self):
         p0 = None
@@ -132,8 +131,15 @@ class RobotPath:
                 p0 = pose
             A += abs(a_dist(p0, pose))
             p0 = pose
-        A0 = a_dist(self.poses[0][1], self.poses[01][1])
-        denom =1 if A0 == 0 else A0
-        return (A-A0)/denom
+        A0 = a_dist(self.poses[0][1], self.poses[-1][1])
+        return 1/(1+(A-A0))
+
+    def time(self):
+        start = self.poses[0][0]
+        end = self.poses[-1][0]
+        return (end-start).to_sec()
+
+    def stats(self):
+        return self.rotate_efficiency, self.translate_efficiency, self.time
 
         
