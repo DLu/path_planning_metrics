@@ -41,11 +41,11 @@ class ScenarioUpdater(threading.Thread):
 class Scenario:
     def __init__(self, filename):
         scenario = yaml.load( open(filename) )
+        self.scenario = scenario
         self.start = get_pose2d(scenario, 'start')
         self.goal = get_pose2d(scenario, 'goal')
         self.key = os.path.splitext( os.path.basename(filename) )[0]
-        self.objects = scenario.get('objects', [])
-        self.objmap = {}
+        self.objects = scenario.get('objects', {})
 
     def get_start(self):
         return self.start
@@ -54,21 +54,21 @@ class Scenario:
         return self.goal
 
     def spawn(self, gazebo ):
-        for i, obj in enumerate(self.objects):
+        for name, obj in self.objects.iteritems():
             t = obj.get('type', 'box')
-            name = obj.get('name', "object%d"%i)
             size = obj.get('size', [1,1,1])
-            position = obj.get('position', [1,1,1])
+            xyz = obj.get('xyz', [0,0,0])
+            rpy = obj.get('rpy', [0,0,0])
+
             if t=='box':
-                xml = box(name, size[0], size[1], size[2], mass=1.0, color='Blue', is_static=True)
+                xml = box(name, size, xyz, rpy, is_static=True, plugin='movement' in obj)
             else:
                 rospy.logerror("unknown type %s"%t)
                 continue
-            gazebo.spawn_model(name, xml, get_pose(position[0], position[1], position[2]))
-            self.objmap[name] = obj
+            gazebo.spawn_model(name, xml, get_pose(xyz[0], xyz[1], rpy[2]))
 
     def unspawn(self, gazebo):
-        for name in self.objmap:
+        for name in self.objects:
             gazebo.delete_model(name)
 
     def reset(self, gazebo):

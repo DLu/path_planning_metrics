@@ -8,6 +8,7 @@ from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Pose2D, Twist
 from nav_msgs.msg import Path
 from path_planning_simulation import *
+from gazebo_msgs.msg import ModelStates
 import std_msgs.msg
 
 def finished(state):
@@ -118,6 +119,7 @@ def run_empty_room_test(filename, start=(0,0,0), end=(0,0,0)):
     bag(filename, data)
 
 def run_scenario(scenario, filename):
+    rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     g = GazeboHelper()
     scenario.spawn(g)
     scenario.reset(g)
@@ -132,13 +134,13 @@ def run_scenario(scenario, filename):
     topics = rospy.get_param('/nav_experiments/topics', [])
     for topic in topics:
         if 'plan' in topic:
-            print "Add", topic
             mb.addSubscription(topic, Path)
         elif 'command' in topic:
             mb.addSubscription(topic, Twist)
         else:
             rospy.logerror("unknown type for", topic)
     mb.addSubscription('/collisions', std_msgs.msg.String)
+    mb.addSubscription('/simulation_state', ModelStates)
     goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
 
     scenario.start_update_loop()

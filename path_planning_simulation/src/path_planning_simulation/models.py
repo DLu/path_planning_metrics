@@ -1,7 +1,7 @@
 
 STATIC = "<static>true</static>"
 
-def box(name, size=[1,1,1], xyz=[2,0,0], rpy=[0,0,0], is_static=True, plugin=None):
+def box(name, size=[1,1,1], xyz=[0,0,0], rpy=[0,0,0], is_static=True, plugin=None):
     static_string = STATIC if is_static else ""
     plugin_string = "<plugin filename=\"/home/dlu/ros/path_planning_metrics/path_planning_simulation/lib/libanimate_pose.so\" name=\"pose_animation\" />" if plugin else ""
     w,h,d = size
@@ -13,6 +13,7 @@ def box(name, size=[1,1,1], xyz=[2,0,0], rpy=[0,0,0], is_static=True, plugin=Non
     <world name="default">
         <model name="%(name)s">
             <link name="body">
+                <pose>%(x)f %(y)f %(z)f %(r)f %(p)f %(yaw)f</pose>
                 <collision name="geom">
                     <geometry>
                         <box>
