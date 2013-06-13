@@ -3,6 +3,8 @@
   <arg name="throttled" default="false"/>
   <arg name="paused" default="true"/>
 
+  <node name="model_throttler" pkg="topic_tools" type="throttle" args="messages /gazebo/model_states 5 /simulation_state"/>
+
   <include file="$(find gazebo_worlds)/launch/empty_world_paused.launch">
     <arg name="gui" value="$(arg gui)" />
     <arg name="throttled" value="$(arg throttled)" />

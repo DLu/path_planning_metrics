@@ -6,7 +6,7 @@ from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
 
 SET_STATE_NAME = '/gazebo/set_model_state'
-SPAWN_NAME = '/gazebo/spawn_urdf_model'
+SPAWN_NAME = '/gazebo/spawn_gazebo_model'
 DELETE_NAME = '/gazebo/delete_model'
 
 def get_pose(x, y, theta):
@@ -48,9 +48,4 @@ class GazeboHelper:
         response = self.delete_proxy(name)
         rospy.loginfo("DeleteModel: %s | %s", "Success" if response.success else "Failure", response.status_message)
 
-if __name__=='__main__':
-    rospy.init_node('gazebo_helper')
-    g = GazeboHelper()
-    g.set_state('pr2', get_pose(0,0,0))
-    #p.position.z = 2
-    #g.spawn_model('boxx', BOX, p)
+
