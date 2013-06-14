@@ -10,6 +10,7 @@ from nav_msgs.msg import Path
 from path_planning_simulation import *
 from gazebo_msgs.msg import ModelStates
 import std_msgs.msg
+import traceback, sys
 
 def finished(state):
     return state==GoalStatus.SUCCEEDED or state==GoalStatus.ABORTED or state==GoalStatus.PREEMPTED
@@ -19,14 +20,19 @@ def get_time_and_pose(tf, f1, f2):
         t = tf.getLatestCommonTime(f1, f2)
         pos, q = tf.lookupTransform(f1, f2, t)
     except:
+        traceback.print_exc(file=sys.stdout)
         return None, None
 
     rpy = euler_from_quaternion(q)
     return t, Pose2D(pos[0], pos[1], rpy[2])
 
 class MoveBaseClient:
+    global_tf = None
+
     def __init__(self, record_rate=5):
-        self.tf = tf.TransformListener()
+        if MoveBaseClient.global_tf is None:
+            MoveBaseClient.global_tf = tf.TransformListener()
+        self.tf = MoveBaseClient.global_tf
         self.ac = SimpleActionClient('move_base', MoveBaseAction)
         self.record_rate = record_rate
         self.base_frame = '/map'
@@ -49,7 +55,7 @@ class MoveBaseClient:
 
         self.other_data.append( (rospy.Time.now(), topic, msg) )
 
-    def goto(self, loc, debug=True):
+    def goto(self, loc, debug=False):
         self.goal = loc
         q = quaternion_from_euler(0, 0, loc[2])
         goal = MoveBaseGoal()
@@ -82,6 +88,7 @@ class MoveBaseClient:
 
         if debug:
             timer.shutdown()
+            rospy.loginfo("SUCCESS")
 
         self.recording = False
         rospy.sleep(1)
@@ -118,18 +125,7 @@ def run_empty_room_test(filename, start=(0,0,0), end=(0,0,0)):
     data.append( (t, '/goal' , Pose2D(end[0],   end[1],   end[2])) )
     bag(filename, data)
 
-def run_scenario(scenario, filename):
-    rospy.set_param('/nav_experiments/scenario', scenario.scenario)
-    g = GazeboHelper()
-    scenario.spawn(g)
-    scenario.reset(g)
-    t = rospy.Time.now()
-    endpoints = []
-    endpoints.append( (t, '/start', scenario.start) )
-    endpoints.append( (t, '/goal' , scenario.goal ) )
-
-    mb = MoveBaseClient()
-
+def load_subscriptions(mb):
     #TODO: Load classes dynamically
     topics = rospy.get_param('/nav_experiments/topics', [])
     for topic in topics:
@@ -141,10 +137,41 @@ def run_scenario(scenario, filename):
             rospy.logerror("unknown type for", topic)
     mb.addSubscription('/collisions', std_msgs.msg.String)
     mb.addSubscription('/simulation_state', ModelStates)
-    goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
 
-    scenario.start_update_loop()
+
+def run_scenario(scenario, filename):
+    rospy.set_param('/nav_experiments/scenario', scenario.scenario)
+    g = GazeboHelper()
+    scenario.spawn(g)
+    scenario.reset(g)
+    t = rospy.Time.now()
+
+    mb = MoveBaseClient()
+    load_subscriptions(mb)
+
+    goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
     data = mb.goto(goal)
-    scenario.stop_update_loop()
+
     scenario.unspawn(g)
-    bag(filename, endpoints + data)
+    bag(filename, scenario.get_endpoints(t) + data)
+
+def run_batch_scenario(scenario, n, directory):
+    rospy.set_param('/nav_experiments/scenario', scenario.scenario)
+    g = GazeboHelper()
+    try:
+        scenario.spawn(g)
+        mb = MoveBaseClient()
+        load_subscriptions(mb)
+        goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
+        algorithm = rospy.get_param('/nav_experiments/algorithm')
+
+        for i in range(n):
+            rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, n))
+            # TODO Check for file existence
+            filename = "%s/%s-%s-%03d.bag"%(directory, scenario.key, algorithm, i)
+            scenario.reset(g)
+            t = rospy.Time.now()
+            data = mb.goto(goal)
+            bag(filename, scenario.get_endpoints(t) + data)
+    finally:
+        scenario.unspawn(g)

@@ -5,7 +5,6 @@ import rospy
 import yaml
 import os.path
 from geometry_msgs.msg import Pose2D
-import threading
 
 def get_pose2d(scenario, key):
     pose = Pose2D()
@@ -21,22 +20,6 @@ def get_pose2d(scenario, key):
 
 def pose2d_to_pose(pose):
     return get_pose(pose.x, pose.y, pose.theta)
-
-class ScenarioUpdater(threading.Thread):
-    def __init__(self, scenario):
-        threading.Thread.__init__(self)
-        self.scenario = scenario
-        self.running = False
-
-    def run(self):
-        self.running = True
-        rate = rospy.Rate(5)
-        while(self.running):
-            rate.sleep()
-
-    def stop(self):
-        self.running = False
-
 
 class Scenario:
     def __init__(self, filename):
@@ -75,10 +58,13 @@ class Scenario:
         gazebo.set_state('pr2', pose2d_to_pose(self.start))
         rospy.sleep(1.0)
 
-    def start_update_loop(self):
-        self.updater = ScenarioUpdater(self)
-        self.updater.start()
+    def get_endpoints(self, t=None):
+        if t is None:
+            t = rospy.Time.now()
 
-    def stop_update_loop(self):
-        self.updater.stop()
+        endpoints = []
+        endpoints.append( (t, '/start', self.start) )
+        endpoints.append( (t, '/goal' , self.goal ) )
+
+        return endpoints
 
