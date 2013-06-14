@@ -15,10 +15,6 @@
   <node pkg="rostopic" type="rostopic" name="fake_joint_calibration"
         args="pub /calibrated std_msgs/Bool true" />
 
-  <!-- Stereo image processing -->
-  <include file="$(find pr2_gazebo)/config/dualstereo_camera.launch" />
-
-
   <!-- diagnostics aggregator -->
   <node pkg="diagnostic_aggregator" type="aggregator_node" name="diag_agg" args="Robot" />
   <group ns="diag_agg">
