@@ -84,7 +84,10 @@ class RobotPath:
     def plot(self):
         ax = pylab.axes()
         pylab.axis('equal')
-
+        self.plot(ax)
+        pylab.show()
+        
+    def plot_one(self, ax):
         x =[]
         y =[]
         for t, pose in self.poses:
@@ -95,9 +98,7 @@ class RobotPath:
             theta = pose.theta #+ pi
             dx = cos(theta) / 500
             dy = sin(theta) / 500
-            print theta
-            ax.arrow(pose.x, pose.y, dx, dy, head_width=.025, head_length=.05)
-        pylab.show()
+            ax.arrow(pose.x, pose.y, dx, dy, head_width=.025, head_length=.05)    
 
     def plot_progress(self):
         ax = pylab.axes()
