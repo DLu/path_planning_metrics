@@ -1,6 +1,7 @@
 import rospy
 import rosbag
 import tf
+import os.path
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseFeedback
 from actionlib import SimpleActionClient
@@ -155,7 +156,7 @@ def run_scenario(scenario, filename):
     scenario.unspawn(g)
     bag(filename, scenario.get_endpoints(t) + data)
 
-def run_batch_scenario(scenario, n, directory):
+def run_batch_scenario(scenario, n, directory, clean=False):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     g = GazeboHelper()
     try:
@@ -166,9 +167,12 @@ def run_batch_scenario(scenario, n, directory):
         algorithm = rospy.get_param('/nav_experiments/algorithm')
 
         for i in range(n):
-            rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, n))
-            # TODO Check for file existence
             filename = "%s/%s-%s-%03d.bag"%(directory, scenario.key, algorithm, i)
+            if os.path.exists(filename) and not clean:
+                continue
+
+            rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, n))
+           
             scenario.reset(g)
             t = rospy.Time.now()
             data = mb.goto(goal)
