@@ -38,6 +38,7 @@ class MoveBaseClient:
         self.record_rate = record_rate
         self.base_frame = '/map'
         self.target_frame = '/base_footprint'
+        self.timeout = rospy.Duration( rospy.get_param('/nav_experiments/timeout', 60) )
 
         self.recording = False
         self.other_data = []
@@ -79,7 +80,9 @@ class MoveBaseClient:
         if debug:
             timer = rospy.Timer(rospy.Duration(5), self.print_distance)
 
-        while not finished(self.ac.get_state()):
+        start_time = rospy.Time.now()
+
+        while not finished(self.ac.get_state()) and rospy.Time.now() < start_time + self.timeout:
             t, pose = get_time_and_pose(self.tf, self.base_frame, self.target_frame)
             if pose is not None:
                 self.data.append((t,"/robot_pose", pose))
@@ -89,7 +92,6 @@ class MoveBaseClient:
 
         if debug:
             timer.shutdown()
-            rospy.loginfo("SUCCESS")
 
         self.recording = False
         rospy.sleep(1)
@@ -143,18 +145,20 @@ def load_subscriptions(mb):
 def run_scenario(scenario, filename):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     g = GazeboHelper()
-    scenario.spawn(g)
-    scenario.reset(g)
-    t = rospy.Time.now()
+    try:
+        scenario.spawn(g)
+        scenario.reset(g)
+        t = rospy.Time.now()
 
-    mb = MoveBaseClient()
-    load_subscriptions(mb)
+        mb = MoveBaseClient()
+        load_subscriptions(mb)
 
-    goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
-    data = mb.goto(goal)
+        goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
+        data = mb.goto(goal)
+        bag(filename, scenario.get_endpoints(t) + data)
+    finally:
+        scenario.unspawn(g)
 
-    scenario.unspawn(g)
-    bag(filename, scenario.get_endpoints(t) + data)
 
 def run_batch_scenario(scenario, n, directory, clean=False):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
