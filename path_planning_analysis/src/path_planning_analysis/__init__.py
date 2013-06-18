@@ -2,7 +2,9 @@ import roslib; roslib.load_manifest('path_planning_analysis')
 import rosbag
 import collections
 import pylab
+import yaml
 from math import sin, cos, sqrt, pi, atan2
+from path_planning_analysis.object_field import ObjectField
 PIx2 = pi * 2
 
 def smooth(x, window=2):
@@ -60,12 +62,15 @@ class RobotPath:
         self.filename = filename
         self.t0 = None
         self.poses = []
+        self.obstacles = []
         self.other = collections.defaultdict(list)
         for topic, msg, t in bag.read_messages():
             if topic=='/robot_pose':
                 if self.t0 is None:
                     self.t0 = t
                 self.poses.append((t-self.t0,msg))
+            elif topic=='/simulation_state':
+                self.obstacles.append((t,msg))
             else:
                 self.other[topic].append((t,msg))
         bag.close()
@@ -73,6 +78,7 @@ class RobotPath:
             self.valid = False
         else:
             self.valid = True
+        self.object_field = ObjectField(self.get_scenario()['objects'], self.obstacles)
 
     def get_displacement(self):
         ts = [] 
@@ -198,11 +204,15 @@ class RobotPath:
     def collisions(self):
         return 1.0 if len(self.other['/collisions'])>0 else 0.0
 
-    def get_scenario(self):
+    def get_scenario_name(self):
         return self.filename.split('-')[0]
 
     def get_algorithm(self):
         return self.filename.split('-')[1]
+
+    def get_scenario(self):
+        #TODO dynamically code this
+        return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_scenarios/%s.yaml'%self.get_scenario_name()))
 
     def stats(self):
         return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions
