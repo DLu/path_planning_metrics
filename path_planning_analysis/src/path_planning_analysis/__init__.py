@@ -2,7 +2,7 @@ import roslib; roslib.load_manifest('path_planning_analysis')
 import rosbag
 import collections
 import pylab
-from math import sin, cos, sqrt, pi
+from math import sin, cos, sqrt, pi, atan2
 PIx2 = pi * 2
 
 def smooth(x, window=2):
@@ -85,6 +85,21 @@ class RobotPath:
             else:
                 vs.append(0)
         return vs
+
+    def get_velocity(self, start_off=0, end_off=2):
+        vels = []
+        for i in range(len(self.poses)):
+            si = max(0, i + start_off)
+            ei = min(len(self.poses)-1, i + end_off)
+            t1, p1 = self.poses[si]
+            t2, p2 = self.poses[ei]
+            dx = p2.x - p1.x
+            dy = p2.y - p1.y
+            t = (t2-t1).to_sec()
+            if t==0:
+                t = 1
+            vels.append( ( atan2(dy,dx), sqrt(dx*dx+dy*dy)/t))
+        return vels
 
     def plot(self):
         ax = pylab.axes()
