@@ -5,6 +5,50 @@ import scipy.spatial
 from geometry_msgs.msg import Pose, TransformStamped, Polygon, Point32
 from tf import Transformer
 from tf.transformations import quaternion_from_euler
+from math import sqrt
+
+def distance(x0, y0, x1, y1):
+    return sqrt(pow(x1-x0,2)+pow(y1-y0,2))
+
+def distance_to_line(pX, pY, x0, y0, x1, y1):
+    A = pX - x0
+    B = pY - y0
+    C = x1 - x0
+    D = y1 - y0
+
+    dot = A * C + B * D
+    len_sq = C * C + D * D
+    param = dot / len_sq
+
+    if param < 0:
+        xx = x0
+        yy = y0
+    elif param > 1:
+        xx = x1
+        yy = y1
+    else:
+        xx = x0 + param * C
+        yy = y0 + param * D
+
+    return distance(pX, pY, xx, yy)
+
+
+def min_distance(px, py, polygon):
+    min_dist = float("inf")
+    for i, pt in enumerate(polygon.points):
+        # check the distance from the point to the first vertex
+        vertex_dist = distance(px, py, pt.x, pt.y)
+
+        # check the distance from the point to the edge
+        if i < len(polygon.points)-1:
+            nextpt = polygon.points[i+1]
+        else:
+            nextpt = polygon.points[0]
+
+        edge_dist = distance_to_line(px, py, pt.x, pt.y, nextpt.x, nextpt.y)
+
+        min_dist = min(min_dist, min(vertex_dist, edge_dist))
+    return min_dist
 
 def get_convex_hull(vecs):
     vecs = numpy.array(vecs)
@@ -129,3 +173,11 @@ class ObjectField:
 
             polygons[name] = obj['polygons'][i0]
         return polygons
+
+    def get_nearest_polygon_distance(self, px, py, t):
+        polygons = self.get_polygons(t)
+        min_dist = float('inf')
+        for name, polygon in polygons.iteritems():
+            d = min_distance(px, py, polygon)
+            min_dist = min(min_dist, d) 
+        return min_dist
