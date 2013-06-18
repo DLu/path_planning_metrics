@@ -37,10 +37,22 @@ def derivative(t, x):
 def dist(p1, p2):
     return sqrt( pow(p1.x-p2.x, 2) + pow(p1.y-p2.y, 2) )
 
-def a_dist(p1, p2):
-    diff = p1.theta - p2.theta
+def a_dist_helper(t1, t2):
+    diff = t1 - t2
     mod_diff = abs(diff % PIx2)
     return min(mod_diff, PIx2-mod_diff)
+
+def a_dist(p1, p2):
+    return a_dist_helper(p1.theta, p2.theta)
+
+def dot_product(a1, m1, a2, m2):
+    theta = a_dist_helper(a1, a2)
+    return cos(theta) * m1 * m2
+
+def plot_path(ax, path):
+    x = [p.pose.position.x for p in path.poses]
+    y = [p.pose.position.y for p in path.poses]
+    ax.plot(x,y)
 
 class RobotPath:
     def __init__(self, filename):
@@ -137,6 +149,14 @@ class RobotPath:
         ax.plot(ts,y)
         ax.plot(ts,z)
         pylab.show()
+
+    def plot_global(self, ax):
+        for t, path in self.other['/move_base_node/NavfnROS/plan']:
+            plot_path(ax, path)
+
+    def plot_local(self, ax):
+        for t, path in self.other['/move_base_node/DWAPlannerROS/local_plan']:
+            plot_path(ax, path)
 
     def translate_efficiency(self):
         ts, ds = self.get_displacement()
