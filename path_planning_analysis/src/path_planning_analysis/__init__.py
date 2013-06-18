@@ -45,6 +45,7 @@ def a_dist(p1, p2):
 class RobotPath:
     def __init__(self, filename):
         bag = rosbag.Bag(filename, 'r')
+        self.filename = filename
         self.t0 = None
         self.poses = []
         self.other = collections.defaultdict(list)
@@ -56,6 +57,10 @@ class RobotPath:
             else:
                 self.other[topic].append((t,msg))
         bag.close()
+        if len(self.poses)==0:
+            self.valid = False
+        else:
+            self.valid = True
 
     def get_displacement(self):
         ts = [] 
@@ -135,12 +140,36 @@ class RobotPath:
         A0 = a_dist(self.poses[0][1], self.poses[-1][1])
         return 1/(1+(A-A0))
 
+    def get_distance_to_goal(self, index=-1):
+        goal = self.other['/goal'][0][1]
+        pose = self.poses[index][1]
+        return dist(goal, pose)
+
+    def get_angle_to_goal(self, index=-1):
+        goal = self.other['/goal'][0][1]
+        pose = self.poses[index][1]
+        return a_dist(goal, pose)
+
+    def completed(self):
+        dist = self.get_distance_to_goal()
+        angle = self.get_angle_to_goal()
+        return 1.0 if dist < 0.2 and angle < .2 else 0.0
+
     def time(self):
         start = self.poses[0][0]
         end = self.poses[-1][0]
         return (end-start).to_sec()
 
+    def collisions(self):
+        return 1.0 if len(self.other['/collisions'])>0 else 0.0
+
+    def get_scenario(self):
+        return self.filename.split('-')[0]
+
+    def get_algorithm(self):
+        return self.filename.split('-')[1]
+
     def stats(self):
-        return self.rotate_efficiency, self.translate_efficiency, self.time
+        return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions
 
         
