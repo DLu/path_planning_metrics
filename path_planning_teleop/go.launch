@@ -1,6 +1,7 @@
 <launch>
+  <arg name="algorithm" default="teleop"/>
 
-  <param name="/nav_experiments/algorithm" value="teleop" />
+  <param name="/nav_experiments/algorithm" value="$(arg algorithm)" />
 
   <arg name="keyboard" default="False" />
 

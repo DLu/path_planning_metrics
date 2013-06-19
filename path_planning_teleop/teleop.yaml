@@ -25,3 +25,5 @@ torso_dn_button: 10
 torso_up_button: 11
 head_button: 1
 deadman_button: 0
+
+joy_msg_timeout: -1.0
