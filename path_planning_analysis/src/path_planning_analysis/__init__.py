@@ -78,7 +78,7 @@ class RobotPath:
             self.valid = False
         else:
             self.valid = True
-        self.object_field = ObjectField(self.get_scenario()['objects'], self.obstacles)
+        self.object_field = ObjectField(self.get_scenario()['objects'], self.obstacles, self.t0)
 
     def get_displacement(self):
         ts = [] 
@@ -118,6 +118,13 @@ class RobotPath:
                 t = 1
             vels.append( ( atan2(dy,dx), sqrt(dx*dx+dy*dy)/t))
         return vels
+
+    def get_distances_to_objects(self):
+        distances = []
+        for t, pose in self.poses:
+            dist = self.object_field.get_nearest_polygon_distance(pose.x, pose.y, t)
+            distances.append( dist )    
+        return distances
 
     def plot(self):
         ax = pylab.axes()
@@ -204,6 +211,13 @@ class RobotPath:
     def collisions(self):
         return 1.0 if len(self.other['/collisions'])>0 else 0.0
 
+    def minimum_distance_to_obstacle(self):
+        return min(self.get_distances_to_objects())
+
+    def average_distance_to_obstacle(self):
+        ds = self.get_distances_to_objects()
+        return sum(ds)/len(ds)
+
     def get_scenario_name(self):
         return self.filename.split('-')[0]
 
@@ -215,6 +229,6 @@ class RobotPath:
         return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_scenarios/%s.yaml'%self.get_scenario_name()))
 
     def stats(self):
-        return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions
+        return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle
 
         

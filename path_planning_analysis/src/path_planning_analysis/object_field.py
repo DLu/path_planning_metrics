@@ -114,7 +114,7 @@ def get_polygon(pose, size, shape_type):
     return p
 
 class ObjectField:
-    def __init__(self, scenario, simulation_states):
+    def __init__(self, scenario, simulation_states, t0):
         self.static_objects = {}
         self.dynamic_objects = {}
 
@@ -144,7 +144,7 @@ class ObjectField:
                     if not name in state.name:
                         continue
                     i = state.name.index(name)
-                    poses.append((t, state.pose[i]))
+                    poses.append((t-t0, state.pose[i]))
                 obj['poses'] = sorted(poses)
                 obj['polygons'] = [None] * len(poses)
                 self.dynamic_objects[name] = obj
@@ -161,8 +161,8 @@ class ObjectField:
             for i, (t, pose) in enumerate(obj['poses']):
                 if i==0 or t < t0:
                     continue
-                dt0 = abs((t-t0).to_sec())
-                dt1 = abs(( obj['poses'][i-1][0]-t0).to_sec())
+                dt0 = abs(t-t0)
+                dt1 = abs(obj['poses'][i-1][0]-t0)
                 if dt0 < dt1:
                     i0 = i
                 else:
