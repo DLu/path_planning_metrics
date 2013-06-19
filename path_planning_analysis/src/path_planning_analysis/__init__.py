@@ -78,7 +78,9 @@ class RobotPath:
             self.valid = False
         else:
             self.valid = True
-        self.object_field = ObjectField(self.get_scenario()['objects'], self.obstacles, self.t0)
+
+        scenario_objects = self.get_scenario().get('objects', {})
+        self.object_field = ObjectField(scenario_objects, self.obstacles, self.t0)
 
     def get_displacement(self):
         ts = [] 
@@ -218,6 +220,14 @@ class RobotPath:
         ds = self.get_distances_to_objects()
         return sum(ds)/len(ds)
 
+    def face_direction_of_travel(self):
+        angles = [pose.theta for (t,pose) in self.poses]
+        vels = self.get_velocity()
+        products = []
+        for angle1, (angle2, mag) in zip(angles, vels):
+            products.append( dot_product(angle1, 1.0, angle2, mag) )
+        return sum(products)/len(products)
+
     def get_scenario_name(self):
         return self.filename.split('-')[0]
 
@@ -229,6 +239,6 @@ class RobotPath:
         return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_scenarios/%s.yaml'%self.get_scenario_name()))
 
     def stats(self):
-        return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle
+        return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle, self.face_direction_of_travel
 
         
