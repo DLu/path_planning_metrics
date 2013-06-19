@@ -5,7 +5,7 @@
       <param name="odom_frame_id" value="odom_combined" />
   </node>
 
-
+  <node pkg="dumb_planner" name="dumb_planner" type="dumb_planner.py" output="screen"/>
 
 </launch>
 
