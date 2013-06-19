@@ -225,8 +225,9 @@ class RobotPath:
         vels = self.get_velocity()
         products = []
         for angle1, (angle2, mag) in zip(angles, vels):
-            products.append( dot_product(angle1, 1.0, angle2, mag) )
-        return sum(products)/len(products)
+            products.append( a_dist_helper(angle1, angle2) )
+        m = sum(products)/len(products)
+        return 1 / (1.0+m)
 
     def get_scenario_name(self):
         return self.filename.split('-')[0]
