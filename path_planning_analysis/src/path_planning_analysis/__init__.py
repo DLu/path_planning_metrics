@@ -106,8 +106,8 @@ class RobotPath:
                 vs.append(0)
         return vs
 
-    def get_velocity(self, start_off=0, end_off=2):
-        vels = []
+    def get_deltas(self, start_off=0, end_off=2):
+        deltas = []
         for i in range(len(self.poses)):
             si = max(0, i + start_off)
             ei = min(len(self.poses)-1, i + end_off)
@@ -115,10 +115,18 @@ class RobotPath:
             t2, p2 = self.poses[ei]
             dx = p2.x - p1.x
             dy = p2.y - p1.y
+            dz = p2.theta - p1.theta
             t = (t2-t1).to_sec()
             if t==0:
                 t = 1
-            vels.append( ( atan2(dy,dx), sqrt(dx*dx+dy*dy)/t))
+            deltas.append( (dx/t, dy/t, dz/t) )
+        return deltas
+
+    def get_velocity(self, start_off=0, end_off=2):
+        deltas = self.get_deltas(start_off, end_off)
+        vels = []
+        for dx,dy,dz in deltas:
+            vels.append( ( atan2(dy,dx), sqrt(dx*dx+dy*dy)))
         return vels
 
     def get_distances_to_objects(self):
@@ -220,14 +228,39 @@ class RobotPath:
         ds = self.get_distances_to_objects()
         return sum(ds)/len(ds)
 
-    def face_direction_of_travel(self):
+    def face_direction_of_travel(self, mag_limit=0.1):
         angles = [pose.theta for (t,pose) in self.poses]
         vels = self.get_velocity()
         products = []
         for angle1, (angle2, mag) in zip(angles, vels):
-            products.append( a_dist_helper(angle1, angle2) )
+            if mag > mag_limit:
+                products.append( a_dist_helper(angle1, angle2) )
         m = sum(products)/len(products)
         return 1 / (1.0+m)
+
+    def get_curvatures(self, delta=5, precision=2):
+        backward = self.get_deltas(-1*delta, 0)
+        forward = self.get_deltas(0, delta)
+
+        sums = []
+        for bb, ff in zip(backward, forward):
+            vv = [round(b,precision) + round(f,precision) for b,f in zip(bb,ff)]
+            aa = [round(f,precision) - round(b,precision) for b,f in zip(bb,ff)]
+            xp = vv[0]
+            yp = vv[1]
+            if xp == 0.0 and yp==0.0:
+                sums.append(0.0)
+                continue
+            xpp = aa[0]
+            ypp = aa[1]
+            k = abs(xp * ypp - xpp * yp) / pow(xp*xp + yp*yp, 3.0/2.0)
+            
+            sums.append(min(100000000,k))
+        return sums
+
+    def curvature(self, delta=5):
+        curvatures = self.get_curvatures(delta)
+        return sum(curvatures)/len(curvatures)
 
     def get_scenario_name(self):
         return self.filename.split('-')[0]
@@ -240,6 +273,6 @@ class RobotPath:
         return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_scenarios/%s.yaml'%self.get_scenario_name()))
 
     def stats(self):
-        return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle, self.face_direction_of_travel
+        return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle, self.face_direction_of_travel, self.curvature
 
         
