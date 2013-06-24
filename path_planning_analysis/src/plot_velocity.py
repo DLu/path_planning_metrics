@@ -6,10 +6,18 @@ from path_planning_analysis import *
 import pylab
 if __name__=='__main__':
     ax = pylab.axes()
+    is_smooth = '-s' in sys.argv
+    
     for filename in sys.argv[1:]:
+        if filename[0]=='-':
+            continue
         path = RobotPath(filename)
         v0 = path.get_velocity()
-        v1 = smooth(v0, 10)
-        ax.plot(v1)
+        mags = [mag for angle, mag in v0]
+
+        if is_smooth:
+            ax.plot(smooth(mags, 10))
+        else:
+            ax.plot(mags)
     pylab.show()
-        
+

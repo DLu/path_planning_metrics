@@ -95,17 +95,6 @@ class RobotPath:
             prev = pose
         return ts, ds
 
-    def get_velocity(self):
-        ts, ds = self.get_displacement()
-        vs = []
-        for i, (ti, xi) in enumerate(zip(ts,ds)):
-            if i>0:
-                if ti-ts[i-1]>0:
-                    vs.append(xi/(ti-ts[i-1]))
-            else:
-                vs.append(0)
-        return vs
-
     def get_deltas(self, start_off=0, end_off=2):
         deltas = []
         for i in range(len(self.poses)):
