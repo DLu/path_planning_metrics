@@ -107,7 +107,7 @@ def point_in_poly(point, poly):
 def poly_to_ros(p):
     newpoly = RosPolygon()
     newpoly.points = [Point32(x,y,0) for x,y in p]
-    return p
+    return newpoly
 
 def ros_to_poly(p):
     return Polygon.Polygon( [(pt.x,pt.y) for pt in p.points]) 
@@ -232,10 +232,21 @@ class ObjectField:
             polygons[name] = obj['polygons'][i0]
         return polygons
 
-    def get_nearest_polygon_distance(self, px, py, t):
-        polygons = self.get_polygons(t)
+    def nearest_distance_helper(self, px, py, polygons):
         min_dist = float('inf')
-        for name, polygon in polygons.iteritems():
+        for polygon in polygons:
             d = min_distance(px, py, polygon)
             min_dist = min(min_dist, d) 
         return min_dist
+
+    def get_nearest_polygon_distance(self, px, py, t):
+        polygons = self.get_polygons(t)
+        return self.nearest_distance_helper(px, py, polygons.values())
+
+    def get_nearest_distance_in_polygon(self, px, py, t, mask):
+        masked_polygons = []
+        for name, poly in self.get_polygons(t).iteritems():
+            new_poly = polygon_intersection(mask, poly)
+            if new_poly:
+                masked_polygons.append(new_poly)
+        return self.nearest_distance_helper(px, py, masked_polygons)

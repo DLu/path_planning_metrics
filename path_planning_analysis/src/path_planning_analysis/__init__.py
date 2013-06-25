@@ -5,6 +5,7 @@ import pylab
 import yaml
 from math import sin, cos, sqrt, pi, atan2
 from path_planning_analysis.object_field import ObjectField
+from geometry_msgs.msg import Polygon as RosPolygon, Point32
 PIx2 = pi * 2
 
 def smooth(x, window=2):
@@ -55,6 +56,12 @@ def plot_path(ax, path):
     x = [p.pose.position.x for p in path.poses]
     y = [p.pose.position.y for p in path.poses]
     ax.plot(x,y)
+
+def average(a):
+    return sum(a)/len(a)
+
+def inv_average(a):
+    return sum([1.0/x for x in a])/len(a)
 
 class RobotPath:
     def __init__(self, filename):
@@ -123,6 +130,25 @@ class RobotPath:
         for t, pose in self.poses:
             dist = self.object_field.get_nearest_polygon_distance(pose.x, pose.y, t)
             distances.append( dist )    
+        return distances
+
+    def get_distances_to_objects_with_polygon(self, width, length, angle_mod):
+        distances = []
+        for t, pose in self.poses:
+            theta = pose.theta + angle_mod
+            dx = cos(theta) * length
+            dy = sin(theta) * length
+            bx = cos(theta + pi / 2) * width / 2
+            by = sin(theta + pi / 2) * width / 2
+
+            p = RosPolygon()
+            p.points.append(Point32(pose.x + bx,      pose.y + by,      0.0))
+            p.points.append(Point32(pose.x - bx,      pose.y - by,      0.0))
+            p.points.append(Point32(pose.x - bx + dx, pose.y - by + dy, 0.0))
+            p.points.append(Point32(pose.x + bx + dx, pose.y + by + dy, 0.0))
+
+            dist = self.object_field.get_nearest_distance_in_polygon(pose.x, pose.y, t, p)
+            distances.append( dist )
         return distances
 
     def plot(self):
@@ -217,6 +243,27 @@ class RobotPath:
         ds = self.get_distances_to_objects()
         return sum(ds)/len(ds)
 
+    def polygon_distances_helper(self, angle, width=1, MAX=100):
+        return self.get_distances_to_objects_with_polygon(width, MAX, angle)
+
+    def front_distances(self):
+        return self.polygon_distances_helper(0.0)
+
+    def left_distances(self):
+        return self.polygon_distances_helper(pi/2)
+
+    def right_distances(self):
+        return self.polygon_distances_helper(-pi/2)
+
+    def front_distance(self):
+        return inv_average(self.front_distances())
+
+    def left_distance(self):
+        return inv_average(self.left_distances())
+
+    def right_distance(self):
+        return inv_average(self.right_distances())
+
     def face_direction_of_travel(self, mag_limit=0.1):
         angles = [pose.theta for (t,pose) in self.poses]
         vels = self.get_velocity()
@@ -262,6 +309,6 @@ class RobotPath:
         return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_scenarios/%s.yaml'%self.get_scenario_name()))
 
     def stats(self):
-        return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle, self.face_direction_of_travel, self.curvature
+        return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle, self.face_direction_of_travel, self.curvature, self.front_distance, self.left_distance, self.right_distance
 
         
