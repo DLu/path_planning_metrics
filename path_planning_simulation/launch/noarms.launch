@@ -3,7 +3,7 @@
   <arg name="initial_y" default="0" />
   
   <!-- send pr2 urdf to param server -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find pr2_description)/robots/pr2_no_arms.urdf.xacro'" />
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find path_planning_simulation)/custom_pr2.xacro'" />
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="spawn_pr2_model" pkg="gazebo" type="spawn_model" args="-x $(arg initial_x) -y $(arg initial_y) -unpause -urdf -param robot_description -model pr2" respawn="false" output="screen" />
