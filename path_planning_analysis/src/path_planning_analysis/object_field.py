@@ -2,10 +2,12 @@ import roslib; roslib.load_manifest('path_planning_analysis')
 import rospy
 import numpy
 import scipy.spatial
-from geometry_msgs.msg import Pose, TransformStamped, Polygon, Point32
+from geometry_msgs.msg import Pose, TransformStamped, Point32
+from geometry_msgs.msg import Polygon as RosPolygon
 from tf import Transformer
 from tf.transformations import quaternion_from_euler
 from math import sqrt
+import Polygon #https://github.com/jraedler/Polygon2/
 
 def distance(x0, y0, x1, y1):
     return sqrt(pow(x1-x0,2)+pow(y1-y0,2))
@@ -63,6 +65,62 @@ def get_convex_hull(vecs):
     h = vecs[ps[numpy.argsort(numpy.arctan2(A[:,1], A[:,0]))]]
     return h
 
+def line_intersection_helper(a1,a2,b1,b2):
+    denom =      (b2.y-b1.y)*(a2.x-a1.x) - (b2.x-b1.x)*(a2.y-a1.y)
+    if denom==0:
+        return None
+    numerator1 = (b2.x-b1.x)*(a1.y-b1.y) - (b2.y-b1.y)*(a1.x-b1.x)
+    numerator2 = (a2.x-a1.x)*(a1.y-b1.y) - (a2.y-a1.y)*(a1.x-b1.x)
+    return numerator1/denom, numerator2/denom
+
+def line_intersection_helper2(a1,a2,f):
+    x = a1.x + f * (a2.x - a1.x)
+    y = a1.y + f * (a2.y - a1.y)
+    return x,y
+
+def line_intersection(a1,a2,b1,b2, segments=False):
+    intersection = line_intersection_helper(a1,a2,b1,b2)
+    if not intersection:
+        return None
+
+    ua, ub = intersection
+    if segments:
+        if ua < 0 or ua > 1 or ub < 0 or ub > 1:
+            return None
+
+    return line_intersection_helper2(a1, a2, ua)
+
+def point_in_poly(point, poly):
+    inside = False
+
+    for i, pt1 in enumerate(poly.points):
+        pt2 = poly.points[i-1]
+        if point.y > min(pt1.y,pt2.y):
+            if point.y <= max(pt1.y,pt2.y):
+                if point.x <= max(pt1.x,pt2.x):
+                    if pt1.y != pt2.y:
+                        xints = (point.y-pt1.y)*(pt2.x-pt1.x)/(pt2.y-pt1.y)+pt1.x
+                    if pt1.x == pt2.x or point.x <= xints:
+                        inside = not inside
+    return inside
+
+def poly_to_ros(p):
+    newpoly = RosPolygon()
+    newpoly.points = [Point32(x,y,0) for x,y in p]
+    return p
+
+def ros_to_poly(p):
+    return Polygon.Polygon( [(pt.x,pt.y) for pt in p.points]) 
+
+def polygon_intersection(poly1, poly2):
+    q = ros_to_poly(poly1)
+    t = ros_to_poly(poly2)
+    intersection = q & t
+    if len(intersection)==0:
+        return None
+    return poly_to_ros(intersection[0])
+            
+
 POM = [1, -1]
 F = ' ab'
 
@@ -108,9 +166,9 @@ def get_polygon(pose, size, shape_type):
     vertices = get_vertices(pose, size, shape_type)
     projected = [(a[0], a[1]) for a in vertices]
     points = get_convex_hull(projected)
-    p = Polygon()
+    p = RosPolygon()
     for x,y in points:
-        p.points.append(Point32(x,y,0)) 
+        p.points.append(Point32(float(x),float(y),0)) 
     return p
 
 class ObjectField:
