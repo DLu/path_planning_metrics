@@ -63,6 +63,9 @@ def average(a):
 def inv_average(a):
     return sum([1.0/x for x in a])/len(a)
 
+def to_triple(pose):
+    return [pose.x, pose.y, pose.theta]
+
 class RobotPath:
     def __init__(self, filename):
         bag = rosbag.Bag(filename, 'r')
@@ -307,6 +310,21 @@ class RobotPath:
     def get_scenario(self):
         #TODO dynamically code this
         return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_scenarios/%s.yaml'%self.get_scenario_name()))
+
+    def get_data(self):
+        ts, ds = self.get_displacement()
+        return {'t': ts, 'displacement': ds,
+            'object_distances': self.get_distances_to_objects(),
+            'front_distances': self.front_distances(),
+            'left_distances': self.left_distances(),
+            'right_distances': self.right_distances(),
+            'curvatures': self.get_curvatures(),
+            'headings': [heading for heading, magnitude in self.get_velocity()],
+            'first': to_triple(self.poses[0][1]), 
+            'last': to_triple(self.poses[-1][1]),
+            'start': to_triple(self.other['/start'][0][1]),
+            'goal': to_triple(self.other['/goal'][0][1])
+        }
 
     def stats(self):
         return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle, self.face_direction_of_travel, self.curvature, self.front_distance, self.left_distance, self.right_distance
