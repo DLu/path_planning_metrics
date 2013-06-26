@@ -2,7 +2,7 @@
 
 import roslib; roslib.load_manifest('path_planning_analysis')
 import sys
-from path_planning_analysis import *
+from path_planning_analysis.path_stats import *
 import pylab
 import collections
 
@@ -40,25 +40,32 @@ def print_table(data, spaces=True):
             print '\t'.join(s)
 
 if __name__=='__main__':
-    headers = ['']
+    headers = None
     data = []
     for filename in sys.argv[1:]:
         if filename[0]=='-':
             continue
-        path = RobotPath(filename)  
-        L = len(path.stats())      
-        row = [filename]
-        for metric in path.stats():
-            if len(headers)<=L:
-                headers.append(metric.__name__)
-            row.append(metric())
+        path = PathStats(filename)  
+        row = []
+        if '--summary' in sys.argv:
+            row.append(path.get_algorithm())
+        else:
+            row.append(filename)
+
+        stats = path.stats()
+        if headers is None:
+            headers = stats.keys()
+
+        for name in headers:
+            row.append(stats[name])
+
         data.append(row)
 
     if '--summary' in sys.argv:
         m = collections.defaultdict(list)
         
         for row in data:
-            key = row[0].split('-')[1]
+            key = row[0]
             m[key].append( row[1:] )
         
         data = []
@@ -71,6 +78,8 @@ if __name__=='__main__':
             extra = [key, len(rows)]
             data.append( extra + [a/len(rows) for a in sums])
 
-        headers = ['algorithm', 'count'] + headers[1:]
+        headers = ['algorithm', 'count'] + headers
+    else:
+        headers = [''] + headers
 
     print_table([headers] + data, False)
