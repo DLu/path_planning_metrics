@@ -81,19 +81,6 @@ class RobotPath:
         scenario_objects = self.get_scenario().get('objects', {})
         self.object_field = ObjectField(scenario_objects, self.obstacles, self.t0)
 
-    def get_displacement(self):
-        ts = [] 
-        ds = []
-        prev = None
-        for t, pose in self.poses:
-            if prev is None:
-                prev = pose
-            
-            ts.append(t.to_sec())
-            ds.append(dist(pose, prev))
-            prev = pose
-        return ts, ds
-
     def get_deltas(self, start_off=0, end_off=2):
         deltas = []
         for i in range(len(self.poses)):
@@ -234,10 +221,11 @@ class RobotPath:
         return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_scenarios/%s.yaml'%self.get_scenario_name()))
 
     def get_data(self):
-        ts, ds = self.get_displacement()
         vels = self.get_velocity()
 
-        return {'t': ts, 'displacement': ds, 'poses': [to_triple(x) for t,x in self.poses],
+        return {
+            't': [t for t,x in self.poses], 
+            'poses': [to_triple(x) for t,x in self.poses],
             'object_distances': self.get_distances_to_objects(),
             'front_distances': self.front_distances(),
             'left_distances': self.left_distances(),
