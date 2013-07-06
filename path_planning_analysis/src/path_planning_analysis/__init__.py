@@ -36,7 +36,6 @@ def derivative(t, x):
             ds.append(0)
     return ds
         
-
 def dist(p1, p2):
     return sqrt( pow(p1.x-p2.x, 2) + pow(p1.y-p2.y, 2) )
 
@@ -48,20 +47,13 @@ def a_dist_helper(t1, t2):
 def a_dist(p1, p2):
     return a_dist_helper(p1.theta, p2.theta)
 
-def dot_product(a1, m1, a2, m2):
-    theta = a_dist_helper(a1, a2)
-    return cos(theta) * m1 * m2
-
 def plot_path(ax, path):
     x = [p.pose.position.x for p in path.poses]
     y = [p.pose.position.y for p in path.poses]
     ax.plot(x,y)
 
-def average(a):
-    return sum(a)/len(a)
-
-def inv_average(a):
-    return sum([1.0/x for x in a])/len(a)
+def to_triple(pose):
+    return [pose.x, pose.y, pose.theta]
 
 class RobotPath:
     def __init__(self, filename):
@@ -88,19 +80,6 @@ class RobotPath:
 
         scenario_objects = self.get_scenario().get('objects', {})
         self.object_field = ObjectField(scenario_objects, self.obstacles, self.t0)
-
-    def get_displacement(self):
-        ts = [] 
-        ds = []
-        prev = None
-        for t, pose in self.poses:
-            if prev is None:
-                prev = pose
-            
-            ts.append(t.to_sec())
-            ds.append(dist(pose, prev))
-            prev = pose
-        return ts, ds
 
     def get_deltas(self, start_off=0, end_off=2):
         deltas = []
@@ -196,52 +175,8 @@ class RobotPath:
         for t, path in self.other['/move_base_node/DWAPlannerROS/local_plan']:
             plot_path(ax, path)
 
-    def translate_efficiency(self):
-        ts, ds = self.get_displacement()
-        D = sum(map(abs, ds))
-        D0 = dist(self.poses[0][1], self.poses[-1][1])
-        return 1/(1+(D-D0))
-        
-    def rotate_efficiency(self):
-        p0 = None
-        A = 0.0
-        for t, pose in self.poses:
-            if not p0:
-                p0 = pose
-            A += abs(a_dist(p0, pose))
-            p0 = pose
-        A0 = a_dist(self.poses[0][1], self.poses[-1][1])
-        return 1/(1+(A-A0))
-
-    def get_distance_to_goal(self, index=-1):
-        goal = self.other['/goal'][0][1]
-        pose = self.poses[index][1]
-        return dist(goal, pose)
-
-    def get_angle_to_goal(self, index=-1):
-        goal = self.other['/goal'][0][1]
-        pose = self.poses[index][1]
-        return a_dist(goal, pose)
-
-    def completed(self):
-        dist = self.get_distance_to_goal()
-        angle = self.get_angle_to_goal()
-        return 1.0 if dist < 0.2 and angle < .2 else 0.0
-
-    def time(self):
-        start = self.poses[0][0]
-        end = self.poses[-1][0]
-        return (end-start).to_sec()
-
     def collisions(self):
         return 1.0 if len(self.other['/collisions'])>0 else 0.0
-
-    def minimum_distance_to_obstacle(self):
-        return min(self.get_distances_to_objects())
-
-    def average_distance_to_obstacle(self):
-        ds = self.get_distances_to_objects()
-        return sum(ds)/len(ds)
 
     def polygon_distances_helper(self, angle, width=1, MAX=100):
         return self.get_distances_to_objects_with_polygon(width, MAX, angle)
@@ -254,25 +189,6 @@ class RobotPath:
 
     def right_distances(self):
         return self.polygon_distances_helper(-pi/2)
-
-    def front_distance(self):
-        return inv_average(self.front_distances())
-
-    def left_distance(self):
-        return inv_average(self.left_distances())
-
-    def right_distance(self):
-        return inv_average(self.right_distances())
-
-    def face_direction_of_travel(self, mag_limit=0.1):
-        angles = [pose.theta for (t,pose) in self.poses]
-        vels = self.get_velocity()
-        products = []
-        for angle1, (angle2, mag) in zip(angles, vels):
-            if mag > mag_limit:
-                products.append( a_dist_helper(angle1, angle2) )
-        m = sum(products)/len(products)
-        return 1 / (1.0+m)
 
     def get_curvatures(self, delta=5, precision=2):
         backward = self.get_deltas(-1*delta, 0)
@@ -294,10 +210,6 @@ class RobotPath:
             sums.append(min(100000000,k))
         return sums
 
-    def curvature(self, delta=5):
-        curvatures = self.get_curvatures(delta)
-        return sum(curvatures)/len(curvatures)
-
     def get_scenario_name(self):
         return self.filename.split('-')[0]
 
@@ -307,6 +219,24 @@ class RobotPath:
     def get_scenario(self):
         #TODO dynamically code this
         return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_scenarios/%s.yaml'%self.get_scenario_name()))
+
+    def get_data(self):
+        vels = self.get_velocity()
+
+        return {
+            't': [t for t,x in self.poses], 
+            'poses': [to_triple(x) for t,x in self.poses],
+            'object_distances': self.get_distances_to_objects(),
+            'front_distances': self.front_distances(),
+            'left_distances': self.left_distances(),
+            'right_distances': self.right_distances(),
+            'curvatures': self.get_curvatures(),
+            'collisions': self.collisions(),
+            'headings': [heading for heading, magnitude in vels],
+            'speeds': [magnitude for heading, magnitude in vels],
+            'start_pose': to_triple(self.other['/start'][0][1]),
+            'goal_pose': to_triple(self.other['/goal'][0][1])
+        }
 
     def stats(self):
         return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle, self.face_direction_of_travel, self.curvature, self.front_distance, self.left_distance, self.right_distance
