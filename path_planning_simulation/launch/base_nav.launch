@@ -1,8 +1,11 @@
 <launch>
   <param name="/nav_experiments/algorithm" value="hydro_nav" />
+  <arg name="launch" default="default" />
+
   <rosparam param="/nav_experiments/topics">['/move_base_node/NavfnROS/plan', '/move_base_node/DWAPlannerROS/local_plan']</rosparam>
   <include file="$(find pr2_navigation_super_config)/main.launch">
     <arg name="fake" value="True"/>
+    <arg name="launch" value="$(arg launch)"/>
   </include>
 </launch>
 
