@@ -2,7 +2,7 @@ from path_planning_analysis.math_util import *
 
 def time(path):
     """METRIC"""
-    return path.t[-1]-path.t[0]
+    return (path.t[-1]-path.t[0]).to_sec()
 
 
 def completed(path):
