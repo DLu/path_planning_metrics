@@ -50,5 +50,39 @@ def curvature(path):
     """METRIC"""
     return average(path.curvatures)
 
+def average_velocity_derivatives(path):
+    """METRIC"""
+    t = [x.to_sec() for x in path.t]
+    results = {}
+    results['average_velocity'] = average(path.speeds)
+    a = derivative(t, path.speeds)
+    results['average_acceleration'] = average(a)
+    j = derivative(t, a)
+    results['average_jerk'] = average(j)
+    return results
 
+def rotational_velocity_derivatives(path):
+    """METRIC"""
+    ts = []
+    vels = []
+    p0 = None
+    
+    for t, pose in zip(path.t, path.poses):
+        if not p0:
+            p0 = pose
+            ts.append(0)
+            vels.append(0.0)
+        else:
+            secs = t.to_sec()
+            ts.append(secs)
+            vels.append( a_dist(p0, pose)/secs )
+
+    results = {}
+    results['average_rotational_velocity'] = average(vels)
+    a = derivative(ts, vels)
+    results['average_rotational_acceleration'] = average(a)
+    j = derivative(ts, a)
+    results['average_rotational_jerk'] = average(j)
+    
+    return results
 

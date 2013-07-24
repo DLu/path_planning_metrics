@@ -1,5 +1,6 @@
 import roslib; roslib.load_manifest('path_planning_analysis')
 import rosbag
+import rospy
 import collections
 import pylab
 import yaml
@@ -26,27 +27,6 @@ def smooth(x, window=2):
 
     return result
 
-def derivative(t, x):
-    ds = []
-        
-    for i, (ti, xi) in enumerate(zip(t,x)):
-        if i>0:
-            ds.append((xi-x[i-1])/(ti-t[i-1]))
-        else:   
-            ds.append(0)
-    return ds
-        
-def dist(p1, p2):
-    return sqrt( pow(p1.x-p2.x, 2) + pow(p1.y-p2.y, 2) )
-
-def a_dist_helper(t1, t2):
-    diff = t1 - t2
-    mod_diff = abs(diff % PIx2)
-    return min(mod_diff, PIx2-mod_diff)
-
-def a_dist(p1, p2):
-    return a_dist_helper(p1.theta, p2.theta)
-
 def plot_path(ax, path):
     x = [p.pose.position.x for p in path.poses]
     y = [p.pose.position.y for p in path.poses]
@@ -67,7 +47,12 @@ class RobotPath:
             if topic=='/robot_pose':
                 if self.t0 is None:
                     self.t0 = t
-                self.poses.append((t-self.t0,msg))
+                    self.poses.append((rospy.Duration(0),msg))
+                else:
+                    ellapsed = t-self.t0
+                    last = ellapsed-self.poses[-1][0]
+                    if last.to_sec()>.001:
+                        self.poses.append((t-self.t0,msg))
             elif topic=='/simulation_state':
                 self.obstacles.append((t,msg))
             else:

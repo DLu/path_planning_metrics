@@ -68,7 +68,11 @@ class PathStats:
         fnes = stat_functions()
         values = {}
         for fn in fnes:
-            values[fn.__name__] = fn(self)
+            result = fn(self)
+            if type(result)==type({}):
+                values.update(result)
+            else:
+                values[fn.__name__] = fn(self)
         return values
 
     def get_distance_to_goal(self, index=-1):

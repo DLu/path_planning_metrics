@@ -26,3 +26,13 @@ def inv_average(a):
 
 def inverse_scale(q):
     return 1.0 / ( q + 1.0 )
+
+def derivative(t, x):
+    ds = []
+        
+    for i, (ti, xi) in enumerate(zip(t,x)):
+        if i>0:
+            ds.append((xi-x[i-1])/(ti-t[i-1]))
+        else:   
+            ds.append(0)
+    return ds
