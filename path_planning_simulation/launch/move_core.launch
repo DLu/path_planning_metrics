@@ -1,0 +1,15 @@
+<launch>
+  <arg name="fake" default="false"/>
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
+
+  <include file="$(find pr2_navigation_global)/amcl_node.xml" unless="$(arg fake)"/>
+  <include file="$(find pr2_navigation_super_config)/fake.launch" if="$(arg fake)"/>
+
+  <include file="$(find pr2_navigation_teleop)/teleop.xml" />
+  <include file="$(find pr2_navigation_perception)/lasers_and_filters.xml" />
+  <include file="$(find pr2_navigation_perception)/ground_plane.xml" />
+
+  <!-- Bring up the tilt_laser aware version of move_base -->
+  <node pkg="pr2_move_base" name="pr2_move_base_node" type="pr2_move_base.py" machine="c2" />
+
+</launch>
