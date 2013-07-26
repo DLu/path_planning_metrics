@@ -19,6 +19,8 @@ class MoveBaseInstance:
 
         if 'dwa' in name:
             self.load_config('/home/dlu/ros/pr2_navigation/pr2_navigation_super_config/params/dwa_planner.yaml', ns='DWAPlannerROS')
+        elif 'TrajectoryPlanner' in name:
+            self.load_config('/home/dlu/ros/pr2_navigation/pr2_navigation_config/move_base/base_local_planner_params.yaml', ns='TrajectoryPlannerROS')
         
     def add_layer(self, is_global, layer_type, layer_name=None, extra=None):
         ns = '/%s/%s_costmap'%(self.name, 'global' if is_global else 'local')
@@ -59,13 +61,29 @@ class MoveBaseInstance:
         for k,v in config.iteritems():
             rospy.set_param("%s/%s"%(namespace,k), v)
 
+    def configure(self, filename):
+        config = yaml.load( open(filename) )
+        rospy.set_param('/nav_experiments/algorithm', config['algorithm'])
+        self.set_local_planner(config['local_planner'])
+
+        self.load_layers( config['global_layers'], True)
+        self.load_layers( config['local_layers'], False)
+
+    def load_layers(self, layers, is_global):
+        for layer in layers:
+            if layer == 'obstacles':
+                self.add_standard_obstacle_layer(is_global)
+            else:
+                self.add_layer(is_global, layer)
+
+
 if __name__=='__main__':
     m = MoveBaseInstance()
-    #m.start()
+    m.start()
     m.set_local_planner('dwa_local_planner/DWAPlannerROS')
     m.add_layer(True, "costmap_2d::StaticLayer")
     m.add_standard_obstacle_layer(True)
     m.add_standard_obstacle_layer(False)
     raw_input("Press Enter")
 
-    #m.shutdown()
+    m.shutdown()
