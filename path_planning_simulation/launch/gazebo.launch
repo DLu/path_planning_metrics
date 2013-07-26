@@ -16,7 +16,7 @@
   <node name="blank_map" pkg="map_server" type="map_server" args="$(find path_planning_data)/blank.yaml" />
   <node name="contact_watcher" pkg="path_planning_simulation" type="contact_watcher.py" />
 
-  <include file="$(find path_planning_simulation/launch/move_core.launch/>
+  <include file="$(find path_planning_simulation)/launch/move_core.launch" />
 
 </launch>
 
