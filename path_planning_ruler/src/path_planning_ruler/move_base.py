@@ -61,13 +61,23 @@ class MoveBaseInstance:
         for k,v in config.iteritems():
             rospy.set_param("%s/%s"%(namespace,k), v)
 
-    def configure(self, filename):
+    def configure(self, filename, parameterization={}):
         config = yaml.load( open(filename) )
         rospy.set_param('/nav_experiments/algorithm', config['algorithm'])
         self.set_local_planner(config['local_planner'])
 
         self.load_layers( config['global_layers'], True)
         self.load_layers( config['local_layers'], False)
+
+        for param in config.get('parameters', []):
+            name = param['name']
+            if name in parameterization:
+                (N, i) = parameterization[name]
+                spread = param['max'] - param['min']
+                value = param['min'] + spread * i / (N - 1)
+            else:
+                value = param['default']
+            rospy.set_param(name, value)
 
     def load_layers(self, layers, is_global):
         for layer in layers:
