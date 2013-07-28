@@ -6,10 +6,19 @@ from path_planning_ruler import *
 from path_planning_ruler.scenario import Scenario
 import sys
 import argparse
+import os, errno
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise
+
 basedir = '/home/dlu/Desktop/path_data'
 
-def multiply(parameterizations, var):
-    name, val_str = var
+def multiply(parameterizations, name, val_str):
     vals = int(val_str)
     newp = []
     for p in parameterizations:
@@ -35,19 +44,38 @@ if __name__=='__main__':
     parameterizations = [{}]
 
     if args.var1:
-        parameterizations = multiply(parameterizations, args.var1)
+        param1, N_str = args.var1
+        parameterizations = multiply(parameterizations, param1, N_str)
 
-    if args.var2:
-        parameterizations = multiply(parameterizations, args.var2)
+        if args.var2:
+            param2, N_str = args.var2
+            parameterizations = multiply(parameterizations, param2, N_str)
+            directory = '%(basedir)s/twoD/%(algorithm)s-%(param1)s-%(param2)s'
+            pattern = '%(scenario_key)s-%(value1)s-%(value2)s-%%03d.bag'
+        else:
+            directory = '%(basedir)s/oneD/%(algorithm)s-%(param1)s'
+            pattern = '%(scenario_key)s-%(value1)s-%%03d.bag'
+    else:
+        directory = '%(basedir)s/core'
+        pattern = '%(scenario_key)s-%(algorithm)s-%%03d.bag'
 
     m = MoveBaseInstance()
 
     for parameterization in parameterizations:
-        m.configure(args.algorithm, parameterization)
+        values = m.configure(args.algorithm, parameterization)
+        if args.var1:
+            value1 = values[param1]
+        if args.var2:
+            value2 = values[param2]
 
+        m.start()
+        algorithm = rospy.get_param('/nav_experiments/algorithm')
 
-    for filename in scenarios:
-#"%s/%s-%s-%03d.bag"%(directory, scenario.key, algorithm, i)
-        run_batch_scenario(scenario, args.n, args.clean)
+        for scenario in scenarios:
+            mkdir_p(directory)
+            full_pattern = '%s/%s'%(directory, pattern % locals() )
+            run_batch_scenario(scenario, full_pattern, args.n, args.clean)
+
+        m.shutdown()
 
 

@@ -69,15 +69,18 @@ class MoveBaseInstance:
         self.load_layers( config['global_layers'], True)
         self.load_layers( config['local_layers'], False)
 
+        values = {}
         for param in config.get('parameters', []):
             name = param['name']
             if name in parameterization:
                 (N, i) = parameterization[name]
                 spread = param['max'] - param['min']
                 value = param['min'] + spread * i / (N - 1)
+                values[name] = value
             else:
                 value = param['default']
             rospy.set_param(name, value)
+        return values
 
     def load_layers(self, layers, is_global):
         for layer in layers:
