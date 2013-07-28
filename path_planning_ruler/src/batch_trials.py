@@ -5,24 +5,49 @@ import rospy
 from path_planning_ruler import *
 from path_planning_ruler.scenario import Scenario
 import sys
+import argparse
+basedir = '/home/dlu/Desktop/path_data'
 
+def multiply(parameterizations, var):
+    name, val_str = var
+    vals = int(val_str)
+    newp = []
+    for p in parameterizations:
+        for z in range(vals):
+            newm = {name: (vals, z)}
+            newm.update(p)
+            newp.append(newm)
+    return newp
+    
 if __name__=='__main__':
-    rospy.init_node('test_script')
+    rospy.init_node('batch_trials_script')
 
-    scenarios = []
-    n = 10
-    clean = False
+    parser = argparse.ArgumentParser()
+    parser.add_argument('algorithm', metavar='algorithm.cfg')
+    parser.add_argument('scenarios', metavar='scenario.yaml', nargs='+')
+    parser.add_argument("-n", "--num_trials", dest="n", help='Number of trials per configuration', metavar='N', type=int, default=10)
+    parser.add_argument('--clean', action='store_true')
+    parser.add_argument('--var1', nargs=2)
+    parser.add_argument('--var2', nargs=2)
 
-    for arg in sys.argv[1:]:
-        if '.yaml' in arg:
-            scenarios.append(arg)
-        elif '--clean'==arg:
-            clean = True
-        else:
-            n = int(arg)
+    args = parser.parse_args()
+    scenarios = [Scenario(filename) for filename in args.scenarios]
+    parameterizations = [{}]
+
+    if args.var1:
+        parameterizations = multiply(parameterizations, args.var1)
+
+    if args.var2:
+        parameterizations = multiply(parameterizations, args.var2)
+
+    m = MoveBaseInstance()
+
+    for parameterization in parameterizations:
+        m.configure(args.algorithm, parameterization)
+
 
     for filename in scenarios:
-        scenario = Scenario(filename)
-        run_batch_scenario(scenario, n, '/home/dlu/Desktop/path_data', clean)
+#"%s/%s-%s-%03d.bag"%(directory, scenario.key, algorithm, i)
+        run_batch_scenario(scenario, args.n, args.clean)
 
 

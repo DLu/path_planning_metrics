@@ -160,7 +160,7 @@ def run_scenario(scenario, filename):
         scenario.unspawn(g)
 
 
-def run_batch_scenario(scenario, n, directory, clean=False):
+def run_batch_scenario(scenario, n, filename_pattern, clean=False):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     g = GazeboHelper()
     try:
@@ -168,10 +168,9 @@ def run_batch_scenario(scenario, n, directory, clean=False):
         mb = MoveBaseClient()
         load_subscriptions(mb)
         goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
-        algorithm = rospy.get_param('/nav_experiments/algorithm')
 
         for i in range(n):
-            filename = "%s/%s-%s-%03d.bag"%(directory, scenario.key, algorithm, i)
+            filename = filename_pattern % i 
             if os.path.exists(filename) and not clean:
                 continue
 
