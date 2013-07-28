@@ -64,6 +64,8 @@ class MoveBaseInstance:
     def configure(self, filename, parameterization={}):
         config = yaml.load( open(filename) )
         rospy.set_param('/nav_experiments/algorithm', config['algorithm'])
+        rospy.set_param('/nav_experiments/topics', config['topics'])
+
         self.set_local_planner(config['local_planner'])
 
         self.load_layers( config['global_layers'], True)
