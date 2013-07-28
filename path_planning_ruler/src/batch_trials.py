@@ -73,15 +73,16 @@ if __name__=='__main__':
         algorithm = rospy.get_param('/nav_experiments/algorithm')
         root = basedir
 
-        for scenario in scenarios:
-            scenario_key = scenario.key
-            thedir = directory % locals()
-            thepattern = pattern % locals()
-
-            mkdir_p(thedir)
-            full_pattern = '%s/%s'%(thedir, thepattern )
-            run_batch_scenario(scenario, args.n, full_pattern, args.clean)
-
-        m.shutdown()
+        try:
+            for scenario in scenarios:
+                scenario_key = scenario.key
+                thedir = directory % locals()
+                thepattern = pattern % locals()
+                
+                mkdir_p(thedir)
+                full_pattern = '%s/%s'%(thedir, thepattern )
+                run_batch_scenario(scenario, args.n, full_pattern, args.clean)
+        finally:
+            m.shutdown()
 
 
