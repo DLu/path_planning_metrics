@@ -4,6 +4,7 @@ import roslib; roslib.load_manifest('path_planning_ruler')
 import rospy
 from path_planning_ruler import *
 from path_planning_ruler.scenario import Scenario
+from path_planning_ruler.move_base import *
 import sys
 import argparse
 import os, errno
@@ -50,13 +51,13 @@ if __name__=='__main__':
         if args.var2:
             param2, N_str = args.var2
             parameterizations = multiply(parameterizations, param2, N_str)
-            directory = '%(basedir)s/twoD/%(algorithm)s-%(param1)s-%(param2)s'
+            directory = '%(root)s/twoD/%(algorithm)s-%(param1)s-%(param2)s'
             pattern = '%(scenario_key)s-%(value1)s-%(value2)s-%%03d.bag'
         else:
-            directory = '%(basedir)s/oneD/%(algorithm)s-%(param1)s'
+            directory = '%(root)s/oneD/%(algorithm)s-%(param1)s'
             pattern = '%(scenario_key)s-%(value1)s-%%03d.bag'
     else:
-        directory = '%(basedir)s/core'
+        directory = '%(root)s/core'
         pattern = '%(scenario_key)s-%(algorithm)s-%%03d.bag'
 
     m = MoveBaseInstance()
@@ -70,11 +71,16 @@ if __name__=='__main__':
 
         m.start()
         algorithm = rospy.get_param('/nav_experiments/algorithm')
+        root = basedir
 
         for scenario in scenarios:
-            mkdir_p(directory)
-            full_pattern = '%s/%s'%(directory, pattern % locals() )
-            run_batch_scenario(scenario, full_pattern, args.n, args.clean)
+            scenario_key = scenario.key
+            thedir = directory % locals()
+            thepattern = pattern % locals()
+
+            mkdir_p(thedir)
+            full_pattern = '%s/%s'%(thedir, thepattern )
+            run_batch_scenario(scenario, args.n, full_pattern, args.clean)
 
         m.shutdown()
 
