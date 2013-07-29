@@ -4,7 +4,7 @@ import yaml
 import rospy
 
 def get_map(name, value):
-    return '_%s:=%s'%(name, value)
+    return '%s:=%s'%(name, value)
 
 class MoveBaseInstance:
     def __init__(self, name='move_base_node'):
@@ -47,7 +47,7 @@ class MoveBaseInstance:
 
     def get_command(self):
         args = ['rosrun', 'move_base', 'move_base']
-        args.append( get_map('name', self.name) )
+        args.append( get_map('_name', self.name) )
         args.append( get_map('odom', "base_odometry/odom"))
         args.append( get_map("cmd_vel", "navigation/cmd_vel"))
 
