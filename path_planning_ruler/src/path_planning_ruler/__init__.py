@@ -7,7 +7,8 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseFeedback
 from actionlib import SimpleActionClient
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Pose2D, Twist
-from nav_msgs.msg import Path
+from nav_msgs.msg import Path, OccupancyGrid
+from map_msgs.msg import OccupancyGridUpdate
 from path_planning_simulation import *
 from gazebo_msgs.msg import ModelStates
 import std_msgs.msg
@@ -136,11 +137,15 @@ def load_subscriptions(mb):
             mb.addSubscription(topic, Path)
         elif 'command' in topic:
             mb.addSubscription(topic, Twist)
+        elif 'costmap_updates' in topic:
+            mb.addSubscription(topic, OccupancyGridUpdate)
+        elif 'costmap/costmap' in topic:
+            mb.addSubscription(topic, OccupancyGrid)
         else:
             rospy.logerror("unknown type for", topic)
     mb.addSubscription('/collisions', std_msgs.msg.String)
     mb.addSubscription('/simulation_state', ModelStates)
-
+    mb.addSubscription('/move_base_node/update_time', std_msgs.msg.Float32)
 
 def run_scenario(scenario, filename):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
@@ -160,7 +165,7 @@ def run_scenario(scenario, filename):
         scenario.unspawn(g)
 
 
-def run_batch_scenario(scenario, n, directory, clean=False):
+def run_batch_scenario(scenario, n, filename_pattern, clean=False):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     g = GazeboHelper()
     try:
@@ -168,10 +173,9 @@ def run_batch_scenario(scenario, n, directory, clean=False):
         mb = MoveBaseClient()
         load_subscriptions(mb)
         goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
-        algorithm = rospy.get_param('/nav_experiments/algorithm')
 
         for i in range(n):
-            filename = "%s/%s-%s-%03d.bag"%(directory, scenario.key, algorithm, i)
+            filename = filename_pattern % i 
             if os.path.exists(filename) and not clean:
                 continue
 
