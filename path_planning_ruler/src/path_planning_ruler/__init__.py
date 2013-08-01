@@ -11,6 +11,7 @@ from nav_msgs.msg import Path, OccupancyGrid
 from map_msgs.msg import OccupancyGridUpdate
 from path_planning_simulation import *
 from gazebo_msgs.msg import ModelStates
+import people_msgs.msg
 import std_msgs.msg
 import traceback, sys
 
@@ -146,9 +147,11 @@ def load_subscriptions(mb):
     mb.addSubscription('/collisions', std_msgs.msg.String)
     mb.addSubscription('/simulation_state', ModelStates)
     mb.addSubscription('/move_base_node/update_time', std_msgs.msg.Float32)
+    mb.addSubscription('/people', people_msgs.msg.People)
 
 def run_scenario(scenario, filename):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
+    rospy.set_param('/nav_experiments/people', scenario.people)
     g = GazeboHelper()
     try:
         scenario.spawn(g)
@@ -167,6 +170,7 @@ def run_scenario(scenario, filename):
 
 def run_batch_scenario(scenario, n, filename_pattern, clean=False):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
+        rospy.set_param('/nav_experiments/people', scenario.people)
     g = GazeboHelper()
     try:
         scenario.spawn(g)

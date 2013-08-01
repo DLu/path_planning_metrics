@@ -12,6 +12,7 @@
   <depend package="rosbag"/>
   <depend package="move_base_msgs"/>
   <depend package="path_planning_simulation"/>
+  <depend package="people_msgs"/>
 
 </package>
 

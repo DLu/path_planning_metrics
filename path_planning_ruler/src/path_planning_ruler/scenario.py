@@ -29,6 +29,10 @@ class Scenario:
         self.goal = get_pose2d(scenario, 'goal')
         self.key = os.path.splitext( os.path.basename(filename) )[0]
         self.objects = scenario.get('objects', {})
+        self.people = []
+        for name, obj in self.objects.iteritems():
+            if obj.get('class', '')=='person':
+                self.people.append(name)
 
     def get_start(self):
         return self.start
