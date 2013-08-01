@@ -8,7 +8,7 @@ from people_msgs.msg import People, Person
 class PeoplePublisher:
     def __init__(self):
         rospy.init_node('people_publisher')
-        self.names = rospy.get_param('/nav_experiments/people_names', [])
+        self.names = set( rospy.get_param('/nav_experiments/people_names', []) )
         
         self.sub = rospy.Subscriber('/simulation_state', gazebo_msgs.msg.ModelStates, self.model_state_cb)
         self.pub = rospy.Publisher('/people', People)
@@ -18,6 +18,8 @@ class PeoplePublisher:
         people_list.header.stamp = rospy.Time.now()
         people_list.header.frame_id = '/map'
         for name, pose, twist in zip(msg.name, msg.pose, msg.twist):
+            if len(self.names)==len(people_list.people):
+                break
             if name not in self.names:
                 continue
                 
