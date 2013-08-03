@@ -170,7 +170,7 @@ def run_scenario(scenario, filename):
 
 def run_batch_scenario(scenario, n, filename_pattern, clean=False):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
-        rospy.set_param('/nav_experiments/people', scenario.people)
+    rospy.set_param('/nav_experiments/people', scenario.people)
     g = GazeboHelper()
     try:
         scenario.spawn(g)
