@@ -5,6 +5,6 @@ objects:
         size: [.5,.5,.5]
         xyz: [2,0,.25]
         rpy: [0,0,0]
-	class: person
+        class: person
 
 
