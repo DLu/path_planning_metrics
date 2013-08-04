@@ -10,9 +10,6 @@ class MoveBaseInstance:
     def __init__(self, name='move_base_node'):
         self.name = name
         self.process = None
-        self.load_config('/home/dlu/ros/pr2_navigation/pr2_navigation_super_config/params/default_move_base.yaml')
-        self.load_config('/home/dlu/ros/path_planning_metrics/path_planning_data/core_costmap.yaml')
-        
 
     def set_local_planner(self, name):
         rospy.set_param('/%s/base_local_planner'%self.name, name)
@@ -65,6 +62,13 @@ class MoveBaseInstance:
         config = yaml.load( open(filename) )
         rospy.set_param('/nav_experiments/algorithm', config['algorithm'])
         rospy.set_param('/nav_experiments/topics', config['topics'])
+
+        if config['algorithm'] != 'fuerte':
+            self.load_config('/home/dlu/ros/pr2_navigation/pr2_navigation_super_config/params/default_move_base.yaml')
+            self.load_config('/home/dlu/ros/path_planning_metrics/path_planning_data/core_costmap.yaml')
+        else:
+            self.load_config('/home/dlu/ros/path_planning_metrics/path_planning_data/old_parameters.yaml')
+            return {}
 
         self.set_local_planner(config['local_planner'])
 
