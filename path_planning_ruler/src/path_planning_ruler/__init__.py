@@ -146,7 +146,8 @@ def load_subscriptions(mb):
             rospy.logerror("unknown type for", topic)
     mb.addSubscription('/collisions', std_msgs.msg.String)
     mb.addSubscription('/simulation_state', ModelStates)
-    mb.addSubscription('/move_base_node/update_time', std_msgs.msg.Float32)
+    mb.addSubscription('/move_base_node/global_costmap/update_time', std_msgs.msg.Float32)
+    mb.addSubscription('/move_base_node/local_costmap/update_time', std_msgs.msg.Float32)
     mb.addSubscription('/people', people_msgs.msg.People)
 
 def run_scenario(scenario, filename):
