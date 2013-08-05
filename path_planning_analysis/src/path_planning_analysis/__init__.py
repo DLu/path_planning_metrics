@@ -103,6 +103,13 @@ class RobotPath:
             distances.append( dist )    
         return distances
 
+    def get_distances_to_people(self):
+        distances = []
+        for t, pose in self.poses:
+            dist = self.object_field.get_nearest_polygon_distance(pose.x, pose.y, t, person=True)
+            distances.append( dist )    
+        return distances
+
     def get_distances_to_objects_with_polygon(self, width, length, angle_mod):
         distances = []
         for t, pose in self.poses:
@@ -219,6 +226,7 @@ class RobotPath:
             't': [t for t,x in self.poses], 
             'poses': [to_triple(x) for t,x in self.poses],
             'object_distances': self.get_distances_to_objects(),
+            'people_distances': self.get_distances_to_people(),
             'front_distances': self.front_distances(),
             'left_distances': self.left_distances(),
             'right_distances': self.right_distances(),
