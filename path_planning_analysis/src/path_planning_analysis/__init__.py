@@ -42,6 +42,8 @@ class RobotPath:
         self.t0 = None
         self.poses = []
         self.obstacles = []
+        self.local_times = []
+        self.global_times = []
         self.other = collections.defaultdict(list)
         for topic, msg, t in bag.read_messages():
             if topic=='/robot_pose':
@@ -55,6 +57,11 @@ class RobotPath:
                         self.poses.append((t-self.t0,msg))
             elif topic=='/simulation_state':
                 self.obstacles.append((t,msg))
+            elif 'update_time' in topic:
+                if 'global' in topic:
+                    self.global_times.append(msg.data)
+                else:
+                    self.local_times.append(msg.data)
             else:
                 self.other[topic].append((t,msg))
         bag.close()
@@ -93,6 +100,13 @@ class RobotPath:
         distances = []
         for t, pose in self.poses:
             dist = self.object_field.get_nearest_polygon_distance(pose.x, pose.y, t)
+            distances.append( dist )    
+        return distances
+
+    def get_distances_to_people(self):
+        distances = []
+        for t, pose in self.poses:
+            dist = self.object_field.get_nearest_polygon_distance(pose.x, pose.y, t, person=True)
             distances.append( dist )    
         return distances
 
@@ -203,7 +217,7 @@ class RobotPath:
 
     def get_scenario(self):
         #TODO dynamically code this
-        return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_scenarios/%s.yaml'%self.get_scenario_name()))
+        return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_data/scenarios/%s.yaml'%self.get_scenario_name()))
 
     def get_data(self):
         vels = self.get_velocity()
@@ -212,6 +226,7 @@ class RobotPath:
             't': [t for t,x in self.poses], 
             'poses': [to_triple(x) for t,x in self.poses],
             'object_distances': self.get_distances_to_objects(),
+            'people_distances': self.get_distances_to_people(),
             'front_distances': self.front_distances(),
             'left_distances': self.left_distances(),
             'right_distances': self.right_distances(),
@@ -220,7 +235,9 @@ class RobotPath:
             'headings': [heading for heading, magnitude in vels],
             'speeds': [magnitude for heading, magnitude in vels],
             'start_pose': to_triple(self.other['/start'][0][1]),
-            'goal_pose': to_triple(self.other['/goal'][0][1])
+            'goal_pose': to_triple(self.other['/goal'][0][1]),
+            'global_times': self.global_times,
+            'local_times': self.local_times
         }
 
     def stats(self):

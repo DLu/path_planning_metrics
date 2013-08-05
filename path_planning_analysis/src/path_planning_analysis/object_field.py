@@ -179,7 +179,7 @@ class ObjectField:
         for name, m in scenario.iteritems():
             t = m.get('type', 'box')
             size = m.get('size', [1,1,1])
-            obj = {'type': t, 'size': size}
+            obj = {'type': t, 'size': size, 'person': m.get('class', '')=='person'}
 
             if 'movement' not in m:
                 xyz = m.get('xyz', [0,0,0])
@@ -207,9 +207,11 @@ class ObjectField:
                 obj['polygons'] = [None] * len(poses)
                 self.dynamic_objects[name] = obj
 
-    def get_polygons(self, t0):
+    def get_polygons(self, t0, person=False):
         polygons = {}
         for name, obj in self.static_objects.iteritems():
+            if person and not obj['person']:
+                continue
             if 'polygon' not in obj:
                 obj['polygon'] = get_polygon(obj['pose'], obj['size'], obj['type'])
             polygons[name] = obj['polygon']
@@ -239,13 +241,13 @@ class ObjectField:
             min_dist = min(min_dist, d) 
         return min_dist
 
-    def get_nearest_polygon_distance(self, px, py, t):
-        polygons = self.get_polygons(t)
+    def get_nearest_polygon_distance(self, px, py, t, person=False):
+        polygons = self.get_polygons(t, person)
         return self.nearest_distance_helper(px, py, polygons.values())
 
-    def get_nearest_distance_in_polygon(self, px, py, t, mask):
+    def get_nearest_distance_in_polygon(self, px, py, t, mask, person=False):
         masked_polygons = []
-        for name, poly in self.get_polygons(t).iteritems():
+        for name, poly in self.get_polygons(t, person).iteritems():
             new_poly = polygon_intersection(mask, poly)
             if new_poly:
                 masked_polygons.append(new_poly)

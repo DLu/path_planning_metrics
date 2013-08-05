@@ -1,16 +1,13 @@
 from path_planning_analysis.math_util import *
 
 def collisions(path):
-    """METRICS"""
+    """METRIC"""
     return path.collisions
 
-def minimum_distance_to_obstacle(path):
-    """METRIC"""
-    return min(path.object_distances)
-
-def average_distance_to_obstacle(path):
-    """METRIC"""
-    return average(path.object_distances)
+def distance_to_obstacle(path):
+    """METRICS"""
+    return {'minimum_distance_to_obstacle': min(path.object_distances),
+            'average_distance_to_obstacle': average(path.object_distances)}
 
 def front_distance(path):
     """METRIC"""
