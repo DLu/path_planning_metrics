@@ -86,7 +86,9 @@ class MoveBaseInstance:
                 values[name] = value
             else:
                 value = param['default']
-            rospy.set_param(name, value)
+
+            fn = '/%s/%s'%(self.name, name)
+            rospy.set_param(fn, value)
         return values
 
     def load_layers(self, layers, is_global):
@@ -97,13 +99,12 @@ class MoveBaseInstance:
                 self.add_layer(is_global, layer)
 
 
+import sys
 if __name__=='__main__':
     m = MoveBaseInstance()
+    m.configure(sys.argv[1])
+
     m.start()
-    m.set_local_planner('dwa_local_planner/DWAPlannerROS')
-    m.add_layer(True, "costmap_2d::StaticLayer")
-    m.add_standard_obstacle_layer(True)
-    m.add_standard_obstacle_layer(False)
     raw_input("Press Enter")
 
     m.shutdown()
