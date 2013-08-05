@@ -6,6 +6,8 @@ import hashlib
 from geometry_msgs.msg import Pose2D
 from path_planning_analysis.basic_stats import *
 from path_planning_analysis.obstacle_stats import *
+from path_planning_analysis.social_stats import *
+from path_planning_analysis.time_stats import *
 
 def md5_for_file(fn, block_size=2**20):
     md5 = hashlib.md5()

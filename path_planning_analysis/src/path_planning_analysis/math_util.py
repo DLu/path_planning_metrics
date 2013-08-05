@@ -36,3 +36,6 @@ def derivative(t, x):
         else:   
             ds.append(0)
     return ds
+
+def min_max_avg(data):
+    return min(data), max(data), average(data)
