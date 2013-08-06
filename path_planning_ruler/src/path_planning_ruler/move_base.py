@@ -84,6 +84,10 @@ class MoveBaseInstance:
                 spread = param['max'] - param['min']
                 value = param['min'] + spread * i / (N - 1)
                 values[name] = value
+            elif 'link' in param:
+                link_name = param['link']
+                fn = '/%s/%s'%(self.name, link_name)
+                value = rospy.get_param(fn)
             else:
                 value = param['default']
 
