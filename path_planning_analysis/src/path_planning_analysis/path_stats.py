@@ -35,10 +35,13 @@ class PathStats:
         self.resultsfile = folder + '/.results/' + filename + '.yaml'
         self.path_ready = False
         
+        code = md5_for_file(self.filename)
         if os.path.exists(self.resultsfile):
             self.results = yaml.load(open(self.resultsfile))
+            if self.results.get('hash', '') != code:
+                self.results = {'hash': code}
         else:
-            self.results = {}
+            self.results = {'hash': code}
             
     def load(self):
         if self.path_ready:
