@@ -45,14 +45,17 @@ class MoveBaseClient:
         self.recording = False
         self.other_data = []
 
+        self.subscriptions = []
+        self.subscribers = []
+
         while not self.ac.wait_for_server(rospy.Duration(5.0)) and not rospy.is_shutdown():
-            rospy.loginfo('Waiting for server')
+            rospy.loginfo('Waiting for move_base server')
         if rospy.is_shutdown():
             exit(1)
 
     def addSubscription(self, topic, msg_type):
-        sub = rospy.Subscriber(topic, msg_type, self.cb, topic)
-        
+        self.subscriptions.append( (topic, msg_type) )
+
     def cb(self, msg, topic):
         if not self.recording:
             return
@@ -76,6 +79,13 @@ class MoveBaseClient:
         self.data = []
         self.other_data = []
         self.recording = True
+
+        self.subscribers = []
+
+        for topic, msg_type in self.subscriptions:
+            sub = rospy.Subscriber(topic, msg_type, self.cb, topic)
+            self.subscribers.append(sub)
+
         rospy.sleep(0.5)
         self.ac.send_goal(goal)
 
@@ -97,6 +107,10 @@ class MoveBaseClient:
 
         self.recording = False
         rospy.sleep(1)
+
+        for sub in self.subscribers:
+            sub.unregister()
+
         return self.data + self.other_data
 
     def print_distance(self, event=None):
