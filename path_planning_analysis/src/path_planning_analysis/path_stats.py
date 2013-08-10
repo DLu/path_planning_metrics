@@ -32,7 +32,21 @@ class PathStats:
         self.filename = filename
         folder = os.path.dirname( os.path.abspath(filename) )
         self.cachefile = folder + '/.cache/' + filename + '.yaml'
-        code = md5_for_file(filename)
+        self.resultsfile = folder + '/.results/' + filename + '.yaml'
+        self.path_ready = False
+        
+        code = md5_for_file(self.filename)
+        if os.path.exists(self.resultsfile):
+            self.results = yaml.load(open(self.resultsfile))
+            if self.results.get('hash', '') != code:
+                self.results = {'hash': code}
+        else:
+            self.results = {'hash': code}
+            
+    def load(self):
+        if self.path_ready:
+            return
+        code = md5_for_file(self.filename)
 
         read = False
         if os.path.exists(self.cachefile):
@@ -59,6 +73,7 @@ class PathStats:
             elif 'pose' in k:
                 v = Pose2D(v[0], v[1], v[2])
             setattr(self, k, v)
+        self.path_ready = True
 
     def get_scenario_name(self):
         return self.filename.split('-')[0]
@@ -70,11 +85,21 @@ class PathStats:
         fnes = stat_functions()
         values = {}
         for fn in fnes:
-            result = fn(self)
+            name = fn.__name__
+            
+            if name in self.results:
+                result = self.results[name]
+            else:
+                self.load()
+                result = fn(self)
+                self.results[name] = result
+
             if type(result)==type({}):
                 values.update(result)
             else:
-                values[fn.__name__] = fn(self)
+                values[name] = result
+
+        yaml.dump( self.results, open(self.resultsfile, 'w'))
         return values
 
     def get_distance_to_goal(self, index=-1):

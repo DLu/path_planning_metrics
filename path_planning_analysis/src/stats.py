@@ -40,8 +40,16 @@ def print_table(data, spaces=True):
             print '\t'.join(s)
 
 if __name__=='__main__':
-    headers = None
     data = []
+    
+    headers = None
+    if '--basic' in sys.argv:
+        headers = ['time', 'collisions', 'completed']
+    elif '--update-time' in sys.argv:
+        headers = ['min_global_update_time', 'average_global_update_time', 'max_global_update_time', 'min_local_update_time', 'average_local_update_time', 'max_local_update_time']
+    elif '--social' in sys.argv:
+        headers = ['minimum_distance_to_person', 'average_distance_to_person']
+    
     for filename in sys.argv[1:]:
         if filename[0]=='-':
             continue
