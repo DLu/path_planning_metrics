@@ -6,7 +6,7 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseFeedback
 from actionlib import SimpleActionClient
 from actionlib_msgs.msg import GoalStatus
-from geometry_msgs.msg import Pose2D, Twist
+from geometry_msgs.msg import Pose2D, Twist, PoseStamped
 from nav_msgs.msg import Path, OccupancyGrid
 from map_msgs.msg import OccupancyGridUpdate
 from path_planning_simulation import *
@@ -61,8 +61,8 @@ class MoveBaseClient:
             return
 
         if topic == '/move_base_node/DWAPlannerROS/local_plan':
-            msg.header.frame_id = '/map':
-            for i, pose in msg.poses:
+            msg.header.frame_id = '/map'
+            for i, pose in enumerate(msg.poses):
                 msg.poses[i] = self.tf.transformPose('/map', pose)
         elif topic == '/move_base_node/local_costmap/costmap':
             p = PoseStamped()
