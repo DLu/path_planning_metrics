@@ -60,6 +60,18 @@ class MoveBaseClient:
         if not self.recording:
             return
 
+        if topic == '/move_base_node/DWAPlannerROS/local_plan':
+            msg.header.frame_id = '/map':
+            for i, pose in msg.poses:
+                msg.poses[i] = self.tf.transformPose('/map', pose)
+        elif topic == '/move_base_node/local_costmap/costmap':
+            p = PoseStamped()
+            p.header = msg.header
+            p.pose = msg.info.origin
+            np = self.tf.transformPose('/map', p)
+            msg.header = np.header
+            msg.info.origin = np.pose
+
         self.other_data.append( (rospy.Time.now(), topic, msg) )
 
     def goto(self, loc, debug=False):
