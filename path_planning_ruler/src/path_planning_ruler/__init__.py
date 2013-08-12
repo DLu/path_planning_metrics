@@ -6,7 +6,7 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseFeedback
 from actionlib import SimpleActionClient
 from actionlib_msgs.msg import GoalStatus
-from geometry_msgs.msg import Pose2D, Twist, PoseStamped
+from geometry_msgs.msg import Pose2D, Twist, PoseStamped, Point32, Polygon
 from nav_msgs.msg import Path, OccupancyGrid
 from map_msgs.msg import OccupancyGridUpdate
 from path_planning_simulation import *
@@ -123,6 +123,14 @@ class MoveBaseClient:
         for sub in self.subscribers:
             sub.unregister()
 
+        # save footprint
+        footprint_param = rospy.get_param('/move_base_node/footprint', [])
+        footprint = Polygon()
+        for x,y in footprint_param:
+            footprint.points.append( Point32(x,y,0.0) )
+            
+        self.other_data.append( (t, '/footprint', footprint) )
+
         return self.data + self.other_data
 
     def print_distance(self, event=None):
@@ -154,6 +162,7 @@ def run_empty_room_test(filename, start=(0,0,0), end=(0,0,0)):
     data = mb.goto(end)
     data.append( (t, '/start', Pose2D(start[0], start[1], start[2])) )
     data.append( (t, '/goal' , Pose2D(end[0],   end[1],   end[2])) )
+
     bag(filename, data)
 
 def load_subscriptions(mb):
