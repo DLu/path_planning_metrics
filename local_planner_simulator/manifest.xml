@@ -1,0 +1,18 @@
+<package>
+  <description brief="local_planner_simulator">
+
+     local_planner_simulator
+
+  </description>
+  <author>David!!</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/local_planner_simulator</url>
+  <depend package="roscpp"/>
+  <depend package="nav_core"/>
+  <depend package="move_base"/>
+  <depend package="rosbag"/>
+
+</package>
+
+
