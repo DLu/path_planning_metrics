@@ -5,6 +5,7 @@ import rospy
 import yaml
 import os.path
 from geometry_msgs.msg import Pose2D
+import random
 
 def get_pose2d(scenario, key):
     pose = Pose2D()
@@ -33,6 +34,7 @@ class Scenario:
         for name, obj in self.objects.iteritems():
             if obj.get('class', '')=='person':
                 self.people.append(name)
+        self.spawn_names = []
 
     def get_start(self):
         return self.start
@@ -41,11 +43,14 @@ class Scenario:
         return self.goal
 
     def spawn(self, gazebo ):
+        self.spawn_names =[]
         for name, obj in self.objects.iteritems():
             t = obj.get('type', 'box')
             size = obj.get('size', [1,1,1])
             xyz = obj.get('xyz', [0,0,0])
             rpy = obj.get('rpy', [0,0,0])
+            s = '%010x' % random.randrange(16**10)
+            name += s
 
             if t=='box':
                 xml = box(name, size, xyz, rpy, is_static=True, plugin='movement' in obj)
@@ -53,9 +58,10 @@ class Scenario:
                 rospy.logerror("unknown type %s"%t)
                 continue
             gazebo.spawn_model(name, xml, get_pose(xyz[0], xyz[1], rpy[2]))
+            self.spawn_names.append(name)
 
     def unspawn(self, gazebo):
-        for name in self.objects:
+        for name in self.spawn_names:
             gazebo.delete_model(name)
 
     def reset(self, gazebo):

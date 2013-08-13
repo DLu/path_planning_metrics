@@ -1,0 +1,16 @@
+<package>
+  <description brief="path_planning_viz">
+
+     path_planning_viz
+
+  </description>
+  <author>David!!</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/path_planning_viz</url>
+  <depend package="rospy"/>
+  <depend package="rosbag"/>
+
+</package>
+
+

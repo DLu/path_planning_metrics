@@ -6,7 +6,7 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseFeedback
 from actionlib import SimpleActionClient
 from actionlib_msgs.msg import GoalStatus
-from geometry_msgs.msg import Pose2D, Twist
+from geometry_msgs.msg import Pose2D, Twist, PoseStamped, Point32, Polygon
 from nav_msgs.msg import Path, OccupancyGrid
 from map_msgs.msg import OccupancyGridUpdate
 from path_planning_simulation import *
@@ -45,17 +45,32 @@ class MoveBaseClient:
         self.recording = False
         self.other_data = []
 
+        self.subscriptions = []
+        self.subscribers = []
+
         while not self.ac.wait_for_server(rospy.Duration(5.0)) and not rospy.is_shutdown():
-            rospy.loginfo('Waiting for server')
+            rospy.loginfo('Waiting for move_base server')
         if rospy.is_shutdown():
             exit(1)
 
     def addSubscription(self, topic, msg_type):
-        sub = rospy.Subscriber(topic, msg_type, self.cb, topic)
-        
+        self.subscriptions.append( (topic, msg_type) )
+
     def cb(self, msg, topic):
         if not self.recording:
             return
+
+        if topic == '/move_base_node/DWAPlannerROS/local_plan':
+            msg.header.frame_id = '/map'
+            for i, pose in enumerate(msg.poses):
+                msg.poses[i] = self.tf.transformPose('/map', pose)
+        elif topic == '/move_base_node/local_costmap/costmap':
+            p = PoseStamped()
+            p.header = msg.header
+            p.pose = msg.info.origin
+            np = self.tf.transformPose('/map', p)
+            msg.header = np.header
+            msg.info.origin = np.pose
 
         self.other_data.append( (rospy.Time.now(), topic, msg) )
 
@@ -76,6 +91,13 @@ class MoveBaseClient:
         self.data = []
         self.other_data = []
         self.recording = True
+
+        self.subscribers = []
+
+        for topic, msg_type in self.subscriptions:
+            sub = rospy.Subscriber(topic, msg_type, self.cb, topic)
+            self.subscribers.append(sub)
+
         rospy.sleep(0.5)
         self.ac.send_goal(goal)
 
@@ -97,6 +119,18 @@ class MoveBaseClient:
 
         self.recording = False
         rospy.sleep(1)
+
+        for sub in self.subscribers:
+            sub.unregister()
+
+        # save footprint
+        footprint_param = rospy.get_param('/move_base_node/footprint', [])
+        footprint = Polygon()
+        for x,y in footprint_param:
+            footprint.points.append( Point32(x,y,0.0) )
+            
+        self.other_data.append( (t, '/footprint', footprint) )
+
         return self.data + self.other_data
 
     def print_distance(self, event=None):
@@ -128,6 +162,7 @@ def run_empty_room_test(filename, start=(0,0,0), end=(0,0,0)):
     data = mb.goto(end)
     data.append( (t, '/start', Pose2D(start[0], start[1], start[2])) )
     data.append( (t, '/goal' , Pose2D(end[0],   end[1],   end[2])) )
+
     bag(filename, data)
 
 def load_subscriptions(mb):

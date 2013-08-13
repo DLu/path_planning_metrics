@@ -32,7 +32,7 @@ class MoveBaseInstance:
             rospy.set_param('%s/%s'%(ns, layer_name), extra)
 
     def add_standard_obstacle_layer(self, is_global):
-        self.add_layer(is_global, "costmap_2d::VoxelLayer", 'obstacles', yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_data/obstacles.yaml')))
+        self.add_layer(is_global, "costmap_2d::ObstacleLayer", 'obstacles', yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_data/obstacles.yaml')))
 
 
     def start(self):
