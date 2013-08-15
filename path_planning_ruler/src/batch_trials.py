@@ -17,6 +17,29 @@ def mkdir_p(path):
             pass
         else: raise
 
+def param_keys(s1, s2=None):
+    a1 = s1.split('/')
+    ns1 = a1[-1]
+    if s2 is None:
+        return ns1
+
+    a2 = s2.split('/')
+    ns2 = a2[-1]
+
+    if ns1 != ns2:
+        return ns1, ns2
+
+    i=2
+    while i <= len(a1) and i <= len(a2):
+        b1 = a1[-i]
+        b2 = a2[-i]
+        if b1 == b2:
+            i+=1
+        else:
+            return "%s_%s"%(b1, ns1), "%s_%s"%(b2, ns2)
+
+    return '_'.join(a1), '_'.join(a2)
+
 basedir = '/home/dlu/Desktop/path_data'
 
 def multiply(parameterizations, name, val_str):
@@ -50,11 +73,13 @@ if __name__=='__main__':
 
         if args.var2:
             param2, N_str = args.var2
+            key1, key2 = param_keys(param1, param2)
             parameterizations = multiply(parameterizations, param2, N_str)
-            directory = '%(root)s/twoD/%(algorithm)s-%(param1)s-%(param2)s'
+            directory = '%(root)s/twoD/%(algorithm)s-%(key1)s-%(key2)s'
             pattern = '%(scenario_key)s-%(value1)s-%(value2)s-%%03d.bag'
         else:
-            directory = '%(root)s/oneD/%(algorithm)s-%(param1)s'
+            key1 = param_keys(param1)
+            directory = '%(root)s/oneD/%(algorithm)s-%(key1)s'
             pattern = '%(scenario_key)s-%(value1)s-%%03d.bag'
     else:
         directory = '%(root)s/core'
