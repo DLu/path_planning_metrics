@@ -48,13 +48,24 @@ if __name__=='__main__':
             ys[key].append( v )
     
 
-    for key in xs:
-        ax.plot(xs[key], ys[key], 'o', label=key)
+    if '--box' in sys.argv:
+        data = collections.defaultdict(list)
+        for key in xs:
+            for x,y in zip(xs[key], ys[key]):
+                data[x].append(y)
+
+        bxs = sorted(data.keys())
+        bys = [data[k] for k in bxs]
+        plt.boxplot(bys, positions=bxs)
+    else:
+        for key in xs:
+            ax.plot(xs[key], ys[key], 'o', label=key)
+        ax.legend()
 
     pylab.ylabel(name)
     pylab.xlabel(variable)
     ax.set_title(scenario)
-    ax.legend()
+    
     fig = pylab.gcf()
     fig.canvas.set_window_title(variable)
     plt.show()
