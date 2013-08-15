@@ -62,6 +62,7 @@ if __name__=='__main__':
     parser.add_argument('--clean', action='store_true')
     parser.add_argument('--var1', nargs=2)
     parser.add_argument('--var2', nargs=2)
+    parser.add_argument('-q', '--quiet', action='store_true')
 
     args = parser.parse_args()
     scenarios = [Scenario(filename) for filename in args.scenarios]
@@ -85,7 +86,7 @@ if __name__=='__main__':
         directory = '%(root)s/core'
         pattern = '%(scenario_key)s-%(algorithm)s-%%03d.bag'
 
-    m = MoveBaseInstance()
+    m = MoveBaseInstance(quiet=args.quiet)
 
     for parameterization in parameterizations:
         values = m.configure(args.algorithm, parameterization)
@@ -93,6 +94,9 @@ if __name__=='__main__':
             value1 = values[param1]
         if args.var2:
             value2 = values[param2]
+        if len(parameterizations)>0:
+            s = ', '.join(['%s: %s'%(str(k),str(v)) for k,v in values.iteritems()])
+            rospy.loginfo(s)
 
         m.start()
         algorithm = rospy.get_param('/nav_experiments/algorithm')
@@ -106,7 +110,7 @@ if __name__=='__main__':
                 
                 mkdir_p(thedir)
                 full_pattern = '%s/%s'%(thedir, thepattern )
-                run_batch_scenario(scenario, args.n, full_pattern, args.clean)
+                run_batch_scenario(scenario, args.n, full_pattern, args.clean, args.quiet)
         finally:
             m.shutdown()
 
