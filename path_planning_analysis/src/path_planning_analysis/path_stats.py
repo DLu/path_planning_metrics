@@ -8,6 +8,15 @@ from path_planning_analysis.basic_stats import *
 from path_planning_analysis.obstacle_stats import *
 from path_planning_analysis.social_stats import *
 from path_planning_analysis.time_stats import *
+import os, errno
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise
 
 def md5_for_file(fn, block_size=2**20):
     md5 = hashlib.md5()
@@ -31,6 +40,8 @@ class PathStats:
     def __init__(self, filename):
         self.filename = filename
         folder = os.path.dirname( os.path.abspath(filename) )
+        mkdir_p( folder + '/.cache/' )
+        mkdir_p( folder + '/.results/' )
         self.cachefile = folder + '/.cache/' + filename + '.yaml'
         self.resultsfile = folder + '/.results/' + filename + '.yaml'
         self.path_ready = False
