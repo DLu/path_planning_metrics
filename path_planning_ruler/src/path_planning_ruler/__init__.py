@@ -148,23 +148,6 @@ def bag(filename, data):
         b.write(topic, msg, t=time)
     b.close()
 
-def run_empty_room_test(filename, start=(0,0,0), end=(0,0,0)):
-    g = GazeboHelper()    
-    g.set_state('pr2', get_pose(start[0], start[1], start[2]))
-    rospy.sleep(1.0)
-
-    t = rospy.Time.now()
-
-    mb = MoveBaseClient()
-    mb.addSubscription('/move_base_node/NavfnROS/plan', Path)
-    mb.addSubscription('/move_base_node/DWAPlannerROS/local_plan', Path)
-    mb.addSubscription('/collisions', std_msgs.msg.String)
-    data = mb.goto(end)
-    data.append( (t, '/start', Pose2D(start[0], start[1], start[2])) )
-    data.append( (t, '/goal' , Pose2D(end[0],   end[1],   end[2])) )
-
-    bag(filename, data)
-
 def load_subscriptions(mb):
     #TODO: Load classes dynamically
     topics = rospy.get_param('/nav_experiments/topics', [])
@@ -185,10 +168,10 @@ def load_subscriptions(mb):
     mb.addSubscription('/move_base_node/local_costmap/update_time', std_msgs.msg.Float32)
     mb.addSubscription('/people', people_msgs.msg.People)
 
-def run_scenario(scenario, filename):
+def run_scenario(scenario, filename, quiet=False):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     rospy.set_param('/nav_experiments/people', scenario.people)
-    g = GazeboHelper()
+    g = GazeboHelper(quiet)
     try:
         scenario.spawn(g)
         scenario.reset(g)
@@ -204,10 +187,10 @@ def run_scenario(scenario, filename):
         scenario.unspawn(g)
 
 
-def run_batch_scenario(scenario, n, filename_pattern, clean=False):
+def run_batch_scenario(scenario, n, filename_pattern, clean=False, quiet=False):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     rospy.set_param('/nav_experiments/people', scenario.people)
-    g = GazeboHelper()
+    g = GazeboHelper(quiet)
     try:
         scenario.spawn(g)
         mb = MoveBaseClient()

@@ -22,13 +22,14 @@ def get_pose(x, y, theta):
     
 
 class GazeboHelper:
-    def __init__(self):
+    def __init__(self, quiet=False):
         rospy.wait_for_service(SET_STATE_NAME)
         self.state_proxy = rospy.ServiceProxy(SET_STATE_NAME, SetModelState)
         rospy.wait_for_service(SPAWN_NAME)
         self.spawn_proxy = rospy.ServiceProxy(SPAWN_NAME, SpawnModel)
         rospy.wait_for_service(DELETE_NAME)
         self.delete_proxy = rospy.ServiceProxy(DELETE_NAME, DeleteModel)
+        self.quiet = quiet
 
     def set_state(self, name, pose, twist=None, frame='/map'):
         state = ModelState()
@@ -38,14 +39,17 @@ class GazeboHelper:
         if twist is not None:
             state.twist = twist
         response = self.state_proxy(state)
-        rospy.loginfo("SetState: %s | %s", "Success" if response.success else "Failure", response.status_message)
+        if not self.quiet:
+            rospy.loginfo("SetState: %s | %s", "Success" if response.success else "Failure", response.status_message)
 
     def spawn_model(self, name, xml, pose, frame='/map', namespace=""):
         response = self.spawn_proxy(name, xml, namespace, pose, frame)
-        rospy.loginfo("SpawnModel: %s | %s", "Success" if response.success else "Failure", response.status_message)
+        if not self.quiet:
+            rospy.loginfo("SpawnModel: %s | %s", "Success" if response.success else "Failure", response.status_message)
 
     def delete_model(self, name):
         response = self.delete_proxy(name)
-        rospy.loginfo("DeleteModel: %s | %s", "Success" if response.success else "Failure", response.status_message)
+        if not self.quiet:
+            rospy.loginfo("DeleteModel: %s | %s", "Success" if response.success else "Failure", response.status_message)
 
 

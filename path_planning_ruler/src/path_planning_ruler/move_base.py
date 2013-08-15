@@ -7,9 +7,12 @@ def get_map(name, value):
     return '%s:=%s'%(name, value)
 
 class MoveBaseInstance:
-    def __init__(self, name='move_base_node'):
+    def __init__(self, name='move_base_node', quiet=False):
         self.name = name
         self.process = None
+        self.quiet = quiet
+        self.void = open('/dev/null', 'w')
+
 
     def set_local_planner(self, name):
         rospy.set_param('/%s/base_local_planner'%self.name, name)
@@ -36,7 +39,10 @@ class MoveBaseInstance:
 
 
     def start(self):
-        self.process = subprocess.Popen(self.get_command())
+        if self.quiet:
+            self.process = subprocess.Popen(self.get_command(), stdout=self.void, stderr=self.void)
+        else:
+            self.process = subprocess.Popen(self.get_command())
 
     def shutdown(self):
         if self.process:
