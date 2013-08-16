@@ -38,14 +38,28 @@ LocalPlannerSimulator::LocalPlannerSimulator(tf::TransformListener& tf) : tf_(tf
 }
 
         
-void LocalPlannerSimulator::setCostmap(nav_msgs::OccupancyGrid& grid)
+void LocalPlannerSimulator::setCostmap(const nav_msgs::OccupancyGrid::ConstPtr& grid)
 {
-    controller_costmap_ros_->resizeMap(grid.info.width, grid.info.height, grid.info.resolution, grid.info.origin.position.x, grid.info.origin.position.x);
-    for(unsigned int j=0;j<grid.info.height;j++){
-        for(unsigned int i=0;i<grid.info.width;i++){
-            int index = j * grid.info.width + i;
-            controller_costmap_ros_->getCostmap()->setCost(i,j, grid.data[index]);
+    controller_costmap_ros_->resizeMap(grid->info.width, grid->info.height, grid->info.resolution, 
+                                        grid->info.origin.position.x, grid->info.origin.position.y);
+    for(unsigned int j=0;j<grid->info.height;j++){
+        for(unsigned int i=0;i<grid->info.width;i++){
+            int index = j * grid->info.width + i;
+            controller_costmap_ros_->getCostmap()->setCost(i,j, grid->data[index]);
         }
     }
+}
+
+void LocalPlannerSimulator::setPath(const nav_msgs::Path::ConstPtr& msg)
+{
+    tc_->setPlan(msg->poses);
+}
+
+void LocalPlannerSimulator::plan()
+{
+    geometry_msgs::Twist cmd_vel;
+    tc_->computeVelocityCommands(cmd_vel);
+    ROS_INFO("COMMAND: %f %f : %f", cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
+    
 }
     

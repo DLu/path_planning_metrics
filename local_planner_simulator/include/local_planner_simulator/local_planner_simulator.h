@@ -7,13 +7,17 @@
 #include <ros/ros.h>
 #include <nav_core/base_local_planner.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Twist.h>
 #include <costmap_2d/costmap_2d_ros.h>
 #include <pluginlib/class_loader.h>
+#include<nav_msgs/Path.h>
 
   class LocalPlannerSimulator {
     public:
       LocalPlannerSimulator(tf::TransformListener& tf);
-      void setCostmap(nav_msgs::OccupancyGrid& grid); 
+      void setCostmap(const nav_msgs::OccupancyGrid::ConstPtr& msg); 
+      void setPath(const nav_msgs::Path::ConstPtr& msg); 
+      void plan();
 
     private:
       tf::TransformListener& tf_;

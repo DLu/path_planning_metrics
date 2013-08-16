@@ -12,6 +12,7 @@
   <depend package="nav_core"/>
   <depend package="move_base"/>
   <depend package="rosbag"/>
+  <depend package="costmap_2d"/>
 
 </package>
 
