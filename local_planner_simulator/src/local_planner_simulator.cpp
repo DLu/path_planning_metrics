@@ -40,8 +40,8 @@ LocalPlannerSimulator::LocalPlannerSimulator(tf::TransformListener& tf) : tf_(tf
         
 void LocalPlannerSimulator::setCostmap(const nav_msgs::OccupancyGrid::ConstPtr& grid)
 {
-    controller_costmap_ros_->resizeMap(grid->info.width, grid->info.height, grid->info.resolution, 
-                                        grid->info.origin.position.x, grid->info.origin.position.y);
+  controller_costmap_ros_->getCostmap()->resizeMap(grid->info.width, grid->info.height, grid->info.resolution, 
+                                      grid->info.origin.position.x, grid->info.origin.position.y);
     for(unsigned int j=0;j<grid->info.height;j++){
         for(unsigned int i=0;i<grid->info.width;i++){
             int index = j * grid->info.width + i;
