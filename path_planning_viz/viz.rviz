@@ -7,9 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /Marker1
-        - /Marker1/Status1
         - /Marker1/Namespaces1
-        - /Local Path1/Status1
       Splitter Ratio: 0.5
     Tree Height: 454
   - Class: rviz/Selection
@@ -57,7 +55,7 @@ Visualization Manager:
       Marker Topic: visualization_marker
       Name: Marker
       Namespaces:
-        global: true
+        global: false
         local: true
       Queue Size: 100
       Value: true
@@ -119,6 +117,20 @@ Visualization Manager:
       Name: Local Path
       Topic: /local_plan
       Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 0; 0; 255
+      Enabled: true
+      Name: Footprint
+      Topic: /footprint
+      Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 25; 255; 0
+      Enabled: true
+      Name: Polygon
+      Topic: /polygon
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -142,17 +154,17 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.39226
+      Distance: 4.40497
       Focal Point:
-        X: 1.94751
-        Y: 0.392325
-        Z: 0.226643
+        X: 2.56804
+        Y: 0.102092
+        Z: 0.199426
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.4748
+      Pitch: 1.4798
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.70539
+      Yaw: 4.72539
     Saved: ~
 Window Geometry:
   Displays:
@@ -170,5 +182,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1287
-  X: 1683
-  Y: 343
+  X: 1678
+  Y: 335
