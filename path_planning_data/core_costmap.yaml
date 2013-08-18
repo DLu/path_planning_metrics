@@ -5,6 +5,7 @@ local_costmap:
   update_frequency: 5.0
   publish_frequency: 2.0
   rolling_window: true
+  footprint_padding: 0.03
   width: 6.0
   height: 6.0
   resolution: 0.025
@@ -16,3 +17,4 @@ global_costmap:
   update_frequency: 5.0
   publish_frequency: 1.0
   rolling_window: false
+  footprint_padding: 0.015
