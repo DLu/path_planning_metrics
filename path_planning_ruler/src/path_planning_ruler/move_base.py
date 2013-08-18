@@ -51,7 +51,7 @@ class MoveBaseInstance:
     def get_command(self):
         args = ['rosrun', 'move_base', 'move_base']
         args.append( get_map('_name', self.name) )
-        args.append( get_map('odom', "base_odometry/odom"))
+        args.append( get_map('odom', "/base_pose_ground_truth"))
         args.append( get_map("cmd_vel", "navigation/cmd_vel"))
 
         return args
