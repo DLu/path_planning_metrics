@@ -75,6 +75,7 @@ class MoveBaseInstance:
 
         if config['algorithm'] == 'fuerte':
             self.load_config('/home/dlu/ros/path_planning_metrics/path_planning_data/old_parameters.yaml')
+            rospy.set_param('/move_base_node/local_costmap/footprint_padding', 0.015)
             return {}
 
         self.set_local_planner(config['local_planner'])
