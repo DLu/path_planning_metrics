@@ -126,9 +126,14 @@ class MoveBaseClient:
         # save footprint
         footprint_param = rospy.get_param('/move_base_node/footprint', [])
         footprint = Polygon()
-        for x,y in footprint_param:
-            footprint.points.append( Point32(x,y,0.0) )
-            
+        if type(footprint_param)==type([]):
+            for x,y in footprint_param:
+                footprint.points.append( Point32(x,y,0.0) )
+        else: #string
+            for subs in footprint_param[2:-2].split('],['):
+                x,y = subs.split(',')
+                footprint.points.append( Point32(float(x),float(y),0.0))
+
         self.other_data.append( (t, '/footprint', footprint) )
 
         return self.data + self.other_data
