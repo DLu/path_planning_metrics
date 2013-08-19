@@ -51,7 +51,7 @@ class MoveBaseInstance:
     def get_command(self):
         args = ['rosrun', 'move_base', 'move_base']
         args.append( get_map('_name', self.name) )
-        args.append( get_map('odom', "base_odometry/odom"))
+        args.append( get_map('odom', "/base_pose_ground_truth"))
         args.append( get_map("cmd_vel", "navigation/cmd_vel"))
 
         return args
@@ -75,6 +75,7 @@ class MoveBaseInstance:
 
         if config['algorithm'] == 'fuerte':
             self.load_config('/home/dlu/ros/path_planning_metrics/path_planning_data/old_parameters.yaml')
+            rospy.set_param('/move_base_node/local_costmap/footprint_padding', 0.015)
             return {}
 
         self.set_local_planner(config['local_planner'])
