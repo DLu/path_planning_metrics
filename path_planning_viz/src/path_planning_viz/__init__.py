@@ -151,13 +151,19 @@ class CondensedBag:
                 tmp[topic] = self.maps[topic][t]
 
 class Republisher:
-    def __init__(self, pathtopics):
+    def __init__(self, pathtopics, publish_grid = False):
         self.spub = rospy.Publisher('/start', PoseStamped)
         self.gpub = rospy.Publisher('/goal', PoseStamped)
         self.rpub = rospy.Publisher('/robot', PoseStamped)
         self.mpub = rospy.Publisher('/visualization_marker', Marker)
         self.fpub = rospy.Publisher('/footprint', PolygonStamped)
         self.xpub = rospy.Publisher('/polygon', PolygonStamped)
+
+        if publish_grid:
+            self.opub = rospy.Publisher('/costmap', OccupancyGrid)
+        else:
+            self.opub = None
+
         self.jump = 1
 
         self.transforms = {}
@@ -194,6 +200,9 @@ class Republisher:
                 continue
             grid = bag.maps[topic][t]
             self.mpub.publish( get_costmap_marker(grid, 'local' in topic, self.jump) )
+
+            if self.opub and 'local' in topic:
+                self.opub.publish(grid)
 
         for topic in bag.paths:
             if not t in bag.paths[topic]:

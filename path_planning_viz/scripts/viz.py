@@ -12,8 +12,18 @@ else:
 
 bag = CondensedBag(fn, '-g' in sys.argv, '-l' in sys.argv)
 rospy.init_node('viz')
-pub = Republisher(bag.paths.keys())
+pub = Republisher(bag.paths.keys(), '-o' in sys.argv)
 pub.jump = 4
+
+if '-o' in sys.argv:
+    rospy.set_param('/lps_tester/local_costmap/plugins', [])
+    rospy.set_param('/lps_tester/local_costmap/footprint', '[[-0.335,-0.335],[-0.335,0.335],[0.335,0.335],[0.47,0],[0.335,-0.335]]')
+    rospy.set_param('/lps_tester/local_costmap/global_frame', 'odom_combined')
+    rospy.set_param('/lps_tester/local_costmap/robot_base_frame', 'base_footprint')
+    rospy.set_param('/lps_tester/local_costmap/rolling_window', True)
+
+
+
 
 obstacle = PolygonStamped()
 obstacle.header.frame_id = '/map'
@@ -31,6 +41,9 @@ footprint.polygon.points.append(Point32(0.325, 0.325, .1))
 footprint.polygon.points.append(Point32(0.46, 0.0, .1))
 footprint.polygon.points.append(Point32(0.325, -0.325, .1))
 bag.footprint = footprint
+
+pub.transforms['to_link'] = ('/odom_combined', '/base_footprint', (0,0,0), (0,0,0))
+pub.transforms['to_linxk'] = ('/odom_combined', '/odom', (0,0,0), (0,0,0))
 
 t = 0
 play = False
