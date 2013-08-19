@@ -7,22 +7,23 @@ class LPS{
     public:
         LPS(){
             ros::NodeHandle n;
-            ROS_INFO("CONS");
+
             lps = new LocalPlannerSimulator(tf);
+
             grid_sub = n.subscribe("costmap", 1, &LPS::gridCallback, this);
-            path_sub = n.subscribe("path", 1, &LPS::pathCallback, this);
-            ROS_INFO("SUBD");
+            path_sub = n.subscribe("/global_plan", 1, &LPS::pathCallback, this);
             lps->plan();
-            ROS_INFO("X");
         }
 
     private: 
 
         void gridCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg){
             lps->setCostmap(msg);
+            lps->plan();
         }
 
         void pathCallback(const nav_msgs::Path::ConstPtr& msg){
+            ROS_INFO("GOT PATH");
             lps->setPath(msg);
         }
 
@@ -33,11 +34,9 @@ class LPS{
 
 int main(int argc, char **argv)
 {
-ROS_INFO("A");
   ros::init(argc, argv, "lps_tester");
-ROS_INFO("B");
   LPS* lpsa = new LPS();
-ROS_INFO("C");
   ros::spin();  
-    return 0;
+  delete lpsa;
+  return 0;
 }

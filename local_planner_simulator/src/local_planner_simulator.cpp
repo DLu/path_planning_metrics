@@ -6,7 +6,6 @@ LocalPlannerSimulator::LocalPlannerSimulator(tf::TransformListener& tf) : tf_(tf
     blp_loader_("nav_core", "nav_core::BaseLocalPlanner") {
     ros::NodeHandle private_nh("~");
     
-    
     std::string local_planner;
     private_nh.param("base_local_planner", local_planner, std::string("base_local_planner/TrajectoryPlannerROS"));
     controller_costmap_ros_ = new costmap_2d::Costmap2DROS("local_costmap", tf_);
