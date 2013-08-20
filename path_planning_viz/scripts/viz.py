@@ -21,6 +21,8 @@ if '-o' in sys.argv:
     rospy.set_param('/lps_tester/local_costmap/global_frame', 'odom_combined')
     rospy.set_param('/lps_tester/local_costmap/robot_base_frame', 'base_footprint')
     rospy.set_param('/lps_tester/local_costmap/rolling_window', True)
+    rospy.set_param('/lps_tester/base_local_planner', 'dwa_local_planner/DWAPlannerROS')
+    rospy.set_param('/lps_tester/DWAPlannerROS/publish_cost_grid_pc', True)
 
 
 
