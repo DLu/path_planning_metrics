@@ -82,7 +82,8 @@ if __name__=='__main__':
             sums = [0]*len(rows[0])
             for row in rows:
                 for i, v in enumerate(row):
-                    sums[i] += v
+                    if v:
+                        sums[i] += v
             extra = [key, len(rows)]
             data.append( extra + [a/len(rows) for a in sums])
 
