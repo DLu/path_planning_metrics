@@ -3,6 +3,7 @@
 import roslib; roslib.load_manifest('path_planning_analysis')
 import sys
 from path_planning_analysis.path_stats import *
+from path_planning_analysis.interactive import *
 import pylab
 import collections
 
@@ -42,17 +43,9 @@ def print_table(data, spaces=True):
 if __name__=='__main__':
     data = []
     
-    headers = None
-    if '--basic' in sys.argv:
-        headers = ['time', 'collisions', 'completed']
-    elif '--update-time' in sys.argv:
-        headers = ['min_global_update_time', 'average_global_update_time', 'max_global_update_time', 'min_local_update_time', 'average_local_update_time', 'max_local_update_time']
-    elif '--social' in sys.argv:
-        headers = ['minimum_distance_to_person', 'average_distance_to_person']
+    headers, bags = analysis_argparse()
     
-    for filename in sys.argv[1:]:
-        if filename[0]=='-':
-            continue
+    for filename in bags:
         path = PathStats(filename)  
         row = []
         if '--summary' in sys.argv:

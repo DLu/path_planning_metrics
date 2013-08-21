@@ -4,23 +4,12 @@ import roslib; roslib.load_manifest('path_planning_analysis')
 import sys
 import os.path
 from path_planning_analysis.path_stats import *
+from path_planning_analysis.interactive import *
 import pylab
 import collections
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-
-def get_fields():
-    return ['minimum_distance_to_person']
-
-"""
-    if '--basic' in sys.argv:
-        headers = ['time', 'collisions', 'completed']
-    elif '--update-time' in sys.argv:
-        headers = ['min_global_update_time', 'average_global_update_time', 'max_global_update_time', 'min_local_update_time', 'average_local_update_time', 'max_local_update_time']
-    elif '--social' in sys.argv:
-        headers = ['minimum_distance_to_person', 'average_distance_to_person']
-"""
 
 if __name__=='__main__':
     fig, ax = plt.subplots()
@@ -28,10 +17,9 @@ if __name__=='__main__':
     xs = collections.defaultdict(list)
     ys = collections.defaultdict(list)
 
-    headers = get_fields()
-    for filename in sys.argv[1:]:
-        if filename[0]=='-':
-            continue
+    headers, bags = analysis_argparse(one=True)
+    
+    for filename in bags:
         path = PathStats(filename)  
         fullpath = os.path.abspath(filename)
         parts = fullpath.split('/')
