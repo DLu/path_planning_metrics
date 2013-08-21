@@ -87,7 +87,7 @@ def run_one_set(algorithm_fn, scenarios, n, parameterizations, directory, patter
             value1 = values[param1]
         if param2:
             value2 = values[param2]
-        if len(parameterizations)>0:
+        if len(parameterizations)>1:
             s = ', '.join(['%s: %s'%(str(k),str(v)) for k,v in values.iteritems()])
             rospy.loginfo(s)
 
@@ -128,6 +128,8 @@ if __name__=='__main__':
         a2 = p2.parse_args()
         f = open(a2.batchfile, 'r')
         for line in f.readlines():
+            if len(line.strip())==0:
+                continue
             args = parser.parse_args(line.split())
             parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2)
             run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean, a2.quiet)

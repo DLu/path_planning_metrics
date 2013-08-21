@@ -13,6 +13,10 @@ class MoveBaseInstance:
         self.quiet = quiet
         self.void = open('/dev/null', 'w')
 
+        pname = '/%s'%name
+        if rospy.has_param(pname):
+            rospy.delete_param(pname)
+
 
     def set_local_planner(self, name):
         rospy.set_param('/%s/base_local_planner'%self.name, name)
@@ -21,6 +25,7 @@ class MoveBaseInstance:
             self.load_config('/home/dlu/ros/pr2_navigation/pr2_navigation_super_config/params/dwa_planner.yaml', ns='DWAPlannerROS')
         elif 'TrajectoryPlanner' in name:
             self.load_config('/home/dlu/ros/pr2_navigation/pr2_navigation_config/move_base/base_local_planner_params.yaml', ns='TrajectoryPlannerROS')
+            rospy.set_param('/%s/move_slow_and_clear/planner_namespace'%self.name, 'TrajectoryPlannerROS')
         
     def add_layer(self, is_global, layer_type, layer_name=None, extra=None):
         ns = '/%s/%s_costmap'%(self.name, 'global' if is_global else 'local')

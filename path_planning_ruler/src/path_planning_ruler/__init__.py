@@ -204,7 +204,7 @@ def run_batch_scenario(scenario, n, filename_pattern, clean=False, quiet=False):
         all_present = True
         for i in range(n):
             filename = filename_pattern % i 
-            all_present = all_present and os.path.exists(filename):
+            all_present = all_present and os.path.exists(filename)
         if all_present:
             return
 
