@@ -14,6 +14,7 @@ from gazebo_msgs.msg import ModelStates
 import people_msgs.msg
 import std_msgs.msg
 import traceback, sys
+import yaml
 
 def finished(state):
     return state==GoalStatus.SUCCEEDED or state==GoalStatus.ABORTED or state==GoalStatus.PREEMPTED
@@ -135,6 +136,12 @@ class MoveBaseClient:
                 footprint.points.append( Point32(float(x),float(y),0.0))
 
         self.other_data.append( (t, '/footprint', footprint) )
+
+        # save the rest of the configuration
+        params = rospy.get_param('/move_base_node')
+        params_str = std_msgs.msg.String()
+        params_str.data = yaml.dump(params, default_flow_style=False)
+        self.other_data.append( (t, '/parameters', params_str) )
 
         return self.data + self.other_data
 
