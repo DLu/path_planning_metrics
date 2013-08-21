@@ -200,6 +200,14 @@ def run_scenario(scenario, filename, quiet=False):
 
 
 def run_batch_scenario(scenario, n, filename_pattern, clean=False, quiet=False):
+    if not clean:
+        all_present = True
+        for i in range(n):
+            filename = filename_pattern % i 
+            all_present = all_present and os.path.exists(filename):
+        if all_present:
+            return
+
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     rospy.set_param('/nav_experiments/people', scenario.people)
     g = GazeboHelper(quiet)
