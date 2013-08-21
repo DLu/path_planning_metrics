@@ -54,6 +54,7 @@ def multiply(parameterizations, name, val_str):
 
 def parameterize(var1, var2):
     parameterizations = [{}]
+    param1 = param2 = key1 = key2 = None
 
     if var1:
         param1, N_str = var1
@@ -122,7 +123,7 @@ if __name__=='__main__':
 
     args = parser.parse_args()
 
-    directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2)
+    parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2)
     run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean, args.quiet)
 
 
