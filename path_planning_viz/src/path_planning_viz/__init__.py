@@ -176,7 +176,9 @@ class Republisher:
         self.timer = rospy.Timer(rospy.Duration(.1), self.my_callback)
 
     def my_callback(self, event):
-        for name, (parent, child, pos, orientation) in self.transforms.iteritems():
+        keys = self.transforms.keys()
+        for name in keys:
+            (parent, child, pos, orientation) = self.transforms[name]
             self.br.sendTransform(pos,
                              tf.transformations.quaternion_from_euler(orientation[0], orientation[1], orientation[2]),
                              rospy.Time.now(), child, parent)
