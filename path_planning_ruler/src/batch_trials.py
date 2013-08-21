@@ -121,10 +121,21 @@ if __name__=='__main__':
     parser.add_argument('--var2', nargs=2)
     parser.add_argument('-q', '--quiet', action='store_true')
 
-    args = parser.parse_args()
+    if '-b' in sys.argv:
+        p2 = argparse.ArgumentParser()
+        p2.add_argument('-b', '--batch', dest="batchfile")
+        a2 = p2.parse_args()
+        f = open(a2.batchfile, 'r')
+        for line in f.readlines():
+            args = parser.parse_args(line.split())
+            parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2)
+            run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean, args.quiet)
+        f.close()        
+    else:
 
-    parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2)
-    run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean, args.quiet)
+        args = parser.parse_args()
+        parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2)
+        run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean, args.quiet)
 
 
 
