@@ -182,7 +182,6 @@ def load_subscriptions(mb):
 
 def run_scenario(scenario, filename, quiet=False):
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
-    rospy.set_param('/nav_experiments/people', scenario.people)
     g = GazeboHelper(quiet)
     try:
         scenario.spawn(g)
@@ -209,7 +208,6 @@ def run_batch_scenario(scenario, n, filename_pattern, clean=False, quiet=False):
             return
 
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
-    rospy.set_param('/nav_experiments/people', scenario.people)
     g = GazeboHelper(quiet)
     try:
         scenario.spawn(g)

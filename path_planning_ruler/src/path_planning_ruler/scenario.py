@@ -30,10 +30,6 @@ class Scenario:
         self.goal = get_pose2d(scenario, 'goal')
         self.key = os.path.splitext( os.path.basename(filename) )[0]
         self.objects = scenario.get('objects', {})
-        self.people = []
-        for name, obj in self.objects.iteritems():
-            if obj.get('class', '')=='person':
-                self.people.append(name)
         self.spawn_names = []
 
     def get_start(self):
@@ -44,6 +40,7 @@ class Scenario:
 
     def spawn(self, gazebo ):
         self.spawn_names =[]
+        people_names = []
         for name, obj in self.objects.iteritems():
             t = obj.get('type', 'box')
             size = obj.get('size', [1,1,1])
@@ -59,6 +56,9 @@ class Scenario:
                 continue
             gazebo.spawn_model(name, xml, get_pose(xyz[0], xyz[1], rpy[2]))
             self.spawn_names.append(name)
+            if obj.get('class', '')=='person':
+                people_names.append(name)
+        rospy.set_param('/nav_experiments/people', people_names)
 
     def unspawn(self, gazebo):
         for name in self.spawn_names:
