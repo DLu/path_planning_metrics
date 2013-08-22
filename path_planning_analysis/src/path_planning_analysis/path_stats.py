@@ -84,8 +84,10 @@ class PathStats:
                 v = vals
             elif 'pose' in k:
                 v = Pose2D(v[0], v[1], v[2])
+
             setattr(self, k, v)
-            self.data_fields.append(k)
+            if type(v)==list and type(v[0])==float:
+                self.data_fields.append(k)
         self.path_ready = True
 
     def get_scenario_name(self):
