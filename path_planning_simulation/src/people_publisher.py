@@ -8,12 +8,12 @@ from people_msgs.msg import People, Person
 class PeoplePublisher:
     def __init__(self):
         rospy.init_node('people_publisher')
-        self.names = set( rospy.get_param('/nav_experiments/people_names', []) )
-        
         self.sub = rospy.Subscriber('/simulation_state', gazebo_msgs.msg.ModelStates, self.model_state_cb)
         self.pub = rospy.Publisher('/people', People)
 
     def model_state_cb(self, msg):
+        self.names = set( rospy.get_param('/nav_experiments/people', []) )
+
         people_list = People()
         people_list.header.stamp = rospy.Time.now()
         people_list.header.frame_id = '/map'
@@ -22,7 +22,6 @@ class PeoplePublisher:
                 break
             if name not in self.names:
                 continue
-                
             p = Person()
             p.name = name
             p.position = pose.position
