@@ -45,6 +45,7 @@ class PathStats:
         self.cachefile = folder + '/.cache/' + filename + '.yaml'
         self.resultsfile = folder + '/.results/' + filename + '.yaml'
         self.path_ready = False
+        self.data_fields = []
         
         code = md5_for_file(self.filename)
         if os.path.exists(self.resultsfile):
@@ -54,8 +55,8 @@ class PathStats:
         else:
             self.results = {'hash': code}
             
-    def load(self):
-        if self.path_ready:
+    def load(self, force_cache=False):
+        if self.path_ready and not force_cache:
             return
         code = md5_for_file(self.filename)
 
@@ -84,6 +85,7 @@ class PathStats:
             elif 'pose' in k:
                 v = Pose2D(v[0], v[1], v[2])
             setattr(self, k, v)
+            self.data_fields.append(k)
         self.path_ready = True
 
     def get_scenario_name(self):

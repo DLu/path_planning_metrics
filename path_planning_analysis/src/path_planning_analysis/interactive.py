@@ -8,10 +8,15 @@ GROUPS = {
 'social': ['minimum_distance_to_person', 'average_distance_to_person']
 }
 
-def all_keys(filename):
+def all_keys(filename, arrays=False):
     path = PathStats(filename)  
     stats = path.stats()
-    return stats.keys()
+    keys = stats.keys()
+    if arrays:
+        path.load(True)
+        print path.data_fields
+        keys += path.data_fields
+    return keys
 
 def select(options, one=False):
     selected = set()
@@ -59,7 +64,7 @@ def select(options, one=False):
 
     return ret
 
-def analysis_argparse(argv=None, one=False):
+def analysis_argparse(argv=None, one=False, arrays=False):
     if argv is None:
         argv = sys.argv[1:]
 
@@ -85,7 +90,7 @@ def analysis_argparse(argv=None, one=False):
         headers = all_keys(bags[0])
 
     if len(headers)==0:
-        keys = all_keys(bags[0])
+        keys = all_keys(bags[0], arrays)
         if one:
             headers = select(sorted(keys), one)
         else:
