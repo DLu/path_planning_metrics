@@ -1,4 +1,5 @@
 import roslib; roslib.load_manifest('path_planning_analysis')
+import sys
 import rosbag
 import rospy
 import collections
@@ -37,7 +38,6 @@ def to_triple(pose):
 
 class RobotPath:
     def __init__(self, filename):
-        bag = rosbag.Bag(filename, 'r')
         self.filename = filename
         self.t0 = None
         self.poses = []
@@ -45,33 +45,38 @@ class RobotPath:
         self.local_times = []
         self.global_times = []
         self.other = collections.defaultdict(list)
-        for topic, msg, t in bag.read_messages():
-            if topic=='/robot_pose':
-                if self.t0 is None:
-                    self.t0 = t
-                    self.poses.append((rospy.Duration(0),msg))
+        try:
+            bag = rosbag.Bag(filename, 'r')
+            for topic, msg, t in bag.read_messages():
+                if topic=='/robot_pose':
+                    if self.t0 is None:
+                        self.t0 = t
+                        self.poses.append((rospy.Duration(0),msg))
+                    else:
+                        ellapsed = t-self.t0
+                        last = ellapsed-self.poses[-1][0]
+                        if last.to_sec()>.001:
+                            self.poses.append((t-self.t0,msg))
+                elif topic=='/simulation_state':
+                    self.obstacles.append((t,msg))
+                elif 'update_time' in topic:
+                    if 'global' in topic:
+                        self.global_times.append(msg.data)
+                    else:
+                        self.local_times.append(msg.data)
                 else:
-                    ellapsed = t-self.t0
-                    last = ellapsed-self.poses[-1][0]
-                    if last.to_sec()>.001:
-                        self.poses.append((t-self.t0,msg))
-            elif topic=='/simulation_state':
-                self.obstacles.append((t,msg))
-            elif 'update_time' in topic:
-                if 'global' in topic:
-                    self.global_times.append(msg.data)
-                else:
-                    self.local_times.append(msg.data)
+                    self.other[topic].append((t,msg))
+            bag.close()
+            if len(self.poses)==0:
+                self.valid = False
             else:
-                self.other[topic].append((t,msg))
-        bag.close()
-        if len(self.poses)==0:
-            self.valid = False
-        else:
-            self.valid = True
+                self.valid = True
 
-        scenario_objects = self.get_scenario().get('objects', {})
-        self.object_field = ObjectField(scenario_objects, self.obstacles, self.t0)
+            scenario_objects = self.get_scenario().get('objects', {})
+            self.object_field = ObjectField(scenario_objects, self.obstacles, self.t0)
+        except:
+            sys.stderr.write("Cannot read bag file %s\n" % filename)
+            self.valid = False
 
     def get_deltas(self, start_off=0, end_off=2):
         deltas = []
