@@ -19,12 +19,12 @@ def to_strings(data, precision=3):
         table.append(strs)
     return table
 
-def print_table(data, spaces=True):
+def print_table(data, spaces=True, precision=3):
     if spaces:
-        for row in to_strings(data):
+        for row in to_strings(data, precision):
             print '\t'.join(row)
     else:
-        table = to_strings(data)
+        table = to_strings(data, precision)
         lens = [0]*len(table[0])
         for row in table:
             for i, value in enumerate(row):
@@ -44,6 +44,9 @@ if __name__=='__main__':
     data = []
     
     headers, bags = analysis_argparse()
+    precision = 3
+    if sys.argv[-1][0:2]=='-p':
+        precision = int(sys.argv[-1][2:])
     
     for filename in bags:
         path = PathStats(filename)  
@@ -84,4 +87,4 @@ if __name__=='__main__':
     else:
         headers = [''] + headers
 
-    print_table([headers] + data, False)
+    print_table([headers] + data, False, precision)
