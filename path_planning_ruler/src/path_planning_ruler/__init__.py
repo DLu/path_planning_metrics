@@ -11,6 +11,7 @@ from nav_msgs.msg import Path, OccupancyGrid
 from map_msgs.msg import OccupancyGridUpdate
 from path_planning_simulation import *
 from gazebo_msgs.msg import ModelStates
+from std_srvs.srv import Empty
 import people_msgs.msg
 import std_msgs.msg
 import traceback, sys
@@ -51,11 +52,26 @@ class MoveBaseClient:
 
         while not self.ac.wait_for_server(rospy.Duration(5.0)) and not rospy.is_shutdown():
             rospy.loginfo('Waiting for move_base server')
+        rospy.loginfo('Got move_base server')
+        
+        self.resets = {}
+        if rospy.get_param('/nav_experiments/reset', True):
+            for s in ['global', 'local']:
+                sname = '/move_base_node/%s_costmap/reset'%s
+            rospy.wait_for_service(sname)
+            self.resets[sname] = rospy.ServiceProxy(sname, Empty)
+
+
         if rospy.is_shutdown():
             exit(1)
 
     def addSubscription(self, topic, msg_type):
         self.subscriptions.append( (topic, msg_type) )
+
+    def reset(self):
+        for name, proxy in self.resets.iteritems():
+            proxy()
+            rospy.loginfo("Reset called on %s"%name)
 
     def cb(self, msg, topic):
         if not self.recording:
@@ -223,6 +239,7 @@ def run_batch_scenario(scenario, n, filename_pattern, clean=False, quiet=False):
             rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, n))
            
             scenario.reset(g)
+            mb.reset()
             t = rospy.Time.now()
             data = mb.goto(goal)
             bag(filename, scenario.get_endpoints(t) + data)
