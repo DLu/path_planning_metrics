@@ -8,7 +8,7 @@ from path_planning_viz import *
 if len(sys.argv)>1 and sys.argv[1][0]!='-':
     fn = sys.argv[1]
 else:
-    fn = '/home/dlu/Desktop/path_data/core/09_personobstacle-hydro_collect-000.bag'
+    fn = '/home/dlu/Desktop/path_data/core/09_personobstacle-hydroX-000.bag'
 
 bag = CondensedBag(fn, '-g' in sys.argv, '-l' in sys.argv)
 rospy.init_node('viz')
@@ -36,7 +36,7 @@ obstacle.polygon.points.append(Point32(2.25, .25, .1))
 bag.obstacle = obstacle
 
 footprint = PolygonStamped()
-footprint.header.frame_id = '/odom_combined'
+footprint.header.frame_id = '/base_footprint'
 footprint.polygon.points.append(Point32(-0.325, -0.325, .1))
 footprint.polygon.points.append(Point32(-0.325, 0.325, .1))
 footprint.polygon.points.append(Point32(0.325, 0.325, .1))
@@ -44,8 +44,12 @@ footprint.polygon.points.append(Point32(0.46, 0.0, .1))
 footprint.polygon.points.append(Point32(0.325, -0.325, .1))
 bag.footprint = footprint
 
-pub.transforms['to_link'] = ('/odom_combined', '/base_footprint', (0,0,0), (0,0,0))
+#pub.transforms['to_link'] = ('/odom_combined', '/base_footprint', (0,0,0), (0,0,0))
+#pub.transforms['to_linxk'] = ('/odom_combined', '/odom', (0,0,0), (0,0,0))
+
+pub.transforms['to_link'] = ('/map', '/odom_combined', (0,0,0), (0,0,0))
 pub.transforms['to_linxk'] = ('/odom_combined', '/odom', (0,0,0), (0,0,0))
+
 
 t = 0
 play = False

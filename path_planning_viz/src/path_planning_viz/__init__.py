@@ -177,11 +177,12 @@ class Republisher:
 
     def my_callback(self, event):
         keys = self.transforms.keys()
+        now = rospy.Time.now()
         for name in keys:
             (parent, child, pos, orientation) = self.transforms[name]
             self.br.sendTransform(pos,
                              tf.transformations.quaternion_from_euler(orientation[0], orientation[1], orientation[2]),
-                             rospy.Time.now(), child, parent)
+                             now, child, parent)
 
     def publish(self, bag, t):
         print "%d/%d"%(t,len(bag.poses))
@@ -214,5 +215,5 @@ class Republisher:
             path.header.frame_id = '/map'
             self.ppub[topic].publish( path )
 
-        self.transforms['to_base'] = ('/map', '/odom_combined', (pose.x, pose.y, 0), (0,0,pose.theta))
+        self.transforms['to_base'] = ('/odom_combined', '/base_footprint', (pose.x, pose.y, 0), (0,0,pose.theta))
 
