@@ -44,7 +44,13 @@ void LocalPlannerSimulator::setCostmap(const nav_msgs::OccupancyGrid::ConstPtr& 
     for(unsigned int j=0;j<grid->info.height;j++){
         for(unsigned int i=0;i<grid->info.width;i++){
             int index = j * grid->info.width + i;
-            controller_costmap_ros_->getCostmap()->setCost(i,j, grid->data[index]);
+            char cost = grid->data[index];
+            if(cost==100)
+                controller_costmap_ros_->getCostmap()->setCost(i,j, costmap_2d::LETHAL_OBSTACLE);
+            else if(cost==99)
+                controller_costmap_ros_->getCostmap()->setCost(i,j, costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
+            else
+                controller_costmap_ros_->getCostmap()->setCost(i,j, cost*256/100);
         }
     }
 }
