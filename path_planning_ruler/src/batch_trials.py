@@ -91,23 +91,17 @@ def run_one_set(algorithm_fn, scenarios, n, parameterizations, directory, patter
             s = ', '.join(['%s: %s'%(str(k),str(v)) for k,v in values.iteritems()])
             rospy.loginfo(s)
 
-        m.start()
         algorithm = rospy.get_param('/nav_experiments/algorithm')
         root = basedir
 
-        try:
-            for scenario in scenarios:
-                scenario_key = scenario.key
-                thedir = directory % locals()
-                thepattern = pattern % locals()
-                
-                mkdir_p(thedir)
-                full_pattern = '%s/%s'%(thedir, thepattern )
-                run_batch_scenario(scenario, n, full_pattern, clean, quiet)
-        finally:
-            m.shutdown()
-
-
+        for scenario in scenarios:
+            scenario_key = scenario.key
+            thedir = directory % locals()
+            thepattern = pattern % locals()
+            
+            mkdir_p(thedir)
+            full_pattern = '%s/%s'%(thedir, thepattern )
+            run_batch_scenario(m, scenario, n, full_pattern, clean, quiet)
     
 if __name__=='__main__':
     rospy.init_node('batch_trials_script')

@@ -198,7 +198,7 @@ def run_scenario(scenario, filename, quiet=False):
         scenario.unspawn(g)
 
 
-def run_batch_scenario(scenario, n, filename_pattern, clean=False, quiet=False):
+def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, quiet=False):
     if not clean:
         all_present = True
         for i in range(n):
@@ -209,10 +209,9 @@ def run_batch_scenario(scenario, n, filename_pattern, clean=False, quiet=False):
 
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     g = GazeboHelper(quiet)
+    
     try:
         scenario.spawn(g)
-        mb = MoveBaseClient()
-        load_subscriptions(mb)
         goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
 
         for i in range(n):
@@ -222,9 +221,17 @@ def run_batch_scenario(scenario, n, filename_pattern, clean=False, quiet=False):
 
             rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, n))
            
-            scenario.reset(g)
-            t = rospy.Time.now()
-            data = mb.goto(goal)
-            bag(filename, scenario.get_endpoints(t) + data)
+            try:
+                move_base.start()
+                mb = MoveBaseClient()
+                load_subscriptions(mb)
+
+                scenario.reset(g)
+                t = rospy.Time.now()
+                data = mb.goto(goal)
+                bag(filename, scenario.get_endpoints(t) + data)
+
+            finally:
+                move_base.shutdown()
     finally:
         scenario.unspawn(g)
