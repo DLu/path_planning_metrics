@@ -222,11 +222,12 @@ def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, qu
             rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, n))
            
             try:
+                scenario.reset(g)
+
                 move_base.start()
                 mb = MoveBaseClient()
                 load_subscriptions(mb)
 
-                scenario.reset(g)
                 t = rospy.Time.now()
                 data = mb.goto(goal)
                 bag(filename, scenario.get_endpoints(t) + data)
