@@ -163,7 +163,7 @@ class MoveBaseClient:
         rospy.loginfo( "dx: %.2f dy: %.2f dt: %d"%(dx, dy, int(dt*180/3.141)) )
 
 def bag(filename, data):
-    b = rosbag.Bag(filename, 'w')
+    b = rosbag.Bag(filename, 'w', compression=rosbag.Compression.BZ2)
     for time, topic, msg in sorted(data):
         b.write(topic, msg, t=time)
     b.close()
