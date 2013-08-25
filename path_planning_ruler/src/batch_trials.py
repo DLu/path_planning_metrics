@@ -127,7 +127,7 @@ if __name__=='__main__':
                 continue
             args = parser.parse_args(line.split())
             parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2)
-            run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean or a2.clean, a2.quiet or args.clean)
+            run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean or a2.clean, a2.quiet or args.quiet)
         f.close()        
     else:
 
