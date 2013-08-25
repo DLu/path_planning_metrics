@@ -29,6 +29,10 @@ if __name__=='__main__':
         row = []
 
         stats = path.stats()
+
+        if '--completed' in sys.argv and stats['completed']<1.0:
+            continue
+
         for name in headers:
             v = stats[name]
             key = algorithm
