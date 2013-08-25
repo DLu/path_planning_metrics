@@ -2,6 +2,7 @@ import roslib; roslib.load_manifest('path_planning_analysis')
 import rospy
 import numpy
 import scipy.spatial
+from path_planning_analysis.translator import *
 from geometry_msgs.msg import Pose, TransformStamped, Point32
 from geometry_msgs.msg import Polygon as RosPolygon
 from tf import Transformer
@@ -182,17 +183,7 @@ class ObjectField:
             obj = {'type': t, 'size': size, 'person': m.get('class', '')=='person'}
 
             if 'movement' not in m:
-                xyz = m.get('xyz', [0,0,0])
-                rpy = m.get('rpy', [0,0,0])
-                p = Pose()
-                p.position.x = xyz[0]
-                p.position.y = xyz[1]
-                p.position.z = xyz[2]
-                q = quaternion_from_euler(rpy[0], rpy[1], rpy[2])
-                p.orientation.x = q[0]
-                p.orientation.y = q[1]
-                p.orientation.z = q[2]
-                p.orientation.w = q[3]
+                p = get_pose_from_scenario(name, m)
                 obj['pose'] = p
                 get_polygon(p, size, t)
                 self.static_objects[name] = obj
@@ -201,8 +192,8 @@ class ObjectField:
                 for t, state in simulation_states: 
                     if not name in state.name:
                         continue
-                    i = state.name.index(name)
-                    poses.append((t-t0, state.pose[i]))
+                    p = get_pose_from_state(name, state)
+                    poses.append((t-t0, p))
                 obj['poses'] = sorted(poses)
                 obj['polygons'] = [None] * len(poses)
                 self.dynamic_objects[name] = obj

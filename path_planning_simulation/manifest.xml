@@ -15,6 +15,7 @@
   <depend package="rospy"/>
   <depend package="roscpp"/>
   <depend package="people_msgs"/>
+  <depend package="path_planning_analysis"/>
 
 </package>
 
