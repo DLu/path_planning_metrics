@@ -79,6 +79,8 @@ def get_costmap_marker(grid, local=False, JUMP=1):
             for dj in range(JUMP):
                 for di in range(JUMP):
                     index = (j+dj) * grid.info.width + i + di
+                    if index >= len(grid.data):
+                        continue
                     value = max(value, grid.data[index])
 
             pts = get_square(grid.info.resolution, i, j, pos, JUMP)
