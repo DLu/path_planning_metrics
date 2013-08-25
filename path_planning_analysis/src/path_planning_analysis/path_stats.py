@@ -9,6 +9,7 @@ from path_planning_analysis.obstacle_stats import *
 from path_planning_analysis.social_stats import *
 from path_planning_analysis.time_stats import *
 import os, errno
+import sys
 
 def mkdir_p(path):
     try:
@@ -70,6 +71,7 @@ class PathStats:
             read = True
             
         if read:
+            sys.stderr.write("Reading bag file for %s\n"%self.filename)
             self.path = RobotPath(self.filename)
             data = self.path.get_data()
             data['hash'] = code
@@ -86,7 +88,7 @@ class PathStats:
                 v = Pose2D(v[0], v[1], v[2])
 
             setattr(self, k, v)
-            if type(v)==list and type(v[0])==float:
+            if type(v)==list and len(v)>0 and type(v[0])==float:
                 self.data_fields.append(k)
         self.path_ready = True
 

@@ -13,16 +13,9 @@ def get_pose_from_scenario(name, properties):
     p.orientation.y = q[1]
     p.orientation.z = q[2]
     p.orientation.w = q[3]
-    return p, False
+    return p
     
 def get_pose_from_state(name, state):
     i = state.name.index(name)
     return state.pose[i]
-
-def get_simulated_pose(name, state, scenario_objects):
-    properties = scenario_objects[name]
-    if 'movement' in properties:
-        return get_pose_from_scenario(name, properties)
-    else:
-        return get_pose_from_state(name, state)
 

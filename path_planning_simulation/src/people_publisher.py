@@ -3,6 +3,7 @@
 import roslib; roslib.load_manifest('path_planning_simulation')
 import rospy
 import gazebo_msgs.msg
+from path_planning_analysis.translator import *
 from people_msgs.msg import People, Person
 
 class PeoplePublisher:
@@ -13,6 +14,7 @@ class PeoplePublisher:
 
     def model_state_cb(self, msg):
         self.names = set( rospy.get_param('/nav_experiments/people', []) )
+        objects = rospy.get_param('/nav_experiments/scenario/objects', {})
 
         people_list = People()
         people_list.header.stamp = rospy.Time.now()
@@ -22,9 +24,15 @@ class PeoplePublisher:
                 break
             if name not in self.names:
                 continue
+
             p = Person()
             p.name = name
+
+            properties = objects[name]
+            if 'movement' in properties:
+                pose = get_pose_from_scenario(name, properties)
             p.position = pose.position
+
             p.velocity.x  = twist.linear.x
             p.velocity.y  = twist.linear.y
             p.velocity.z  = twist.linear.z
