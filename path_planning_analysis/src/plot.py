@@ -24,6 +24,8 @@ if __name__=='__main__':
     for filename in bags:
         path = PathStats(filename)  
         path.load(True)
+        if '--completed' in sys.argv and path.stats()['completed']<1.0:
+            continue
         key = path.get_algorithm()
         if header in path.data_fields:
             ys[key] += getattr(path, header)

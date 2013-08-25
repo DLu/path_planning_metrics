@@ -28,13 +28,13 @@ def t_test(a,b,one_sided=True):
 if __name__=='__main__':
     headers, bags = analysis_argparse()
     
-    group_data = get_stats(bags, headers, 'algorithm')
+    group_data = get_stats(bags, headers, 'algorithm', only_completed=True)
 
-    data = rotate_stats(group_data, headers)
+    data = rotate_stats(group_data, headers, filter_minimum=5)
     
     pdata = []
 
-    algorithms = data.keys()
+    algorithms = sorted(data.keys())
 
     for header in headers:
         print header + "=" * 50

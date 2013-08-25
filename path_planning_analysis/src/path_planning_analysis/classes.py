@@ -2,10 +2,11 @@ import collections
 
 from path_planning_analysis.path_stats import *
 
-def get_stats(bags, headers, grouping=None):
+def get_stats(bags, headers, grouping=None, only_completed=False):
     data = collections.defaultdict(list)
     for filename in bags:
         path = PathStats(filename)  
+        
         row = []
         if grouping == 'algorithm':
             key = path.get_algorithm()
@@ -13,6 +14,8 @@ def get_stats(bags, headers, grouping=None):
             key = filename
 
         stats = path.stats()
+        if only_completed and stats['completed'] < 1.0:
+            continue
 
         for name in headers:
             row.append(stats[name])
@@ -21,7 +24,7 @@ def get_stats(bags, headers, grouping=None):
     return data
 
 
-def rotate_stats(group_data, headers):
+def rotate_stats(group_data, headers, filter_minimum=0):
     rotated = {}
     for key in sorted(group_data):
         rows = group_data[key]
@@ -34,6 +37,7 @@ def rotate_stats(group_data, headers):
                     data[header].append(value)
 
         data['count'] = len(rows)
-        rotated[key] = data
+        if data['count'] > filter_minimum:
+            rotated[key] = data
 
     return rotated
