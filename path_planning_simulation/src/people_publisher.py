@@ -28,9 +28,10 @@ class PeoplePublisher:
             p = Person()
             p.name = name
 
-            properties = objects[name]
-            if 'movement' in properties:
-                pose = get_pose_from_scenario(name, properties)
+            oname = name[:-10]
+            properties = objects[oname]
+            if 'movement' not in properties:
+                pose = get_pose_from_scenario(oname, properties)
             p.position = pose.position
 
             p.velocity.x  = twist.linear.x
