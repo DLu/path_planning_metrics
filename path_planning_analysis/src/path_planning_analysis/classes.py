@@ -33,7 +33,7 @@ def rotate_stats(group_data, headers, filter_minimum=0):
 
         for row in rows:
             for header, value in zip(headers, row):
-                if value:
+                if value is not None:
                     data[header].append(value)
 
         data['count'] = len(rows)
