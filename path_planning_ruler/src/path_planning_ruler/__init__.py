@@ -42,7 +42,7 @@ class MoveBaseClient:
         self.record_rate = record_rate
         self.base_frame = '/map'
         self.target_frame = '/base_footprint'
-        self.timeout = rospy.Duration( rospy.get_param('/nav_experiments/timeout', 60) )
+        self.timeout = rospy.Duration( rospy.get_param('/nav_experiments/timeout', 90) )
 
         self.recording = False
         self.other_data = []
