@@ -39,6 +39,9 @@ if __name__=='__main__':
         parts = fullpath.split('/')
         algorithm, variable1, variable2 = parts[-2].split('-')
         scenario, value1, value2, trial = parts[-1].split('-')
+        if '--reverse' in sys.argv:
+            t = variable1, variable2, value1, value2
+            variable2, variable1, value2, value1 = t
 
         row = []
 
