@@ -46,7 +46,7 @@ def multiply(parameterizations, name, val_str):
     vals = int(val_str)
     newp = []
     for p in parameterizations:
-        for z in range(vals):
+        for z in range(vals+1):
             newm = {name: (vals, z)}
             newm.update(p)
             newp.append(newm)

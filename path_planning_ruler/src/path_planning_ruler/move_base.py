@@ -99,7 +99,7 @@ class MoveBaseInstance:
             if name in parameterization:
                 (N, i) = parameterization[name]
                 spread = param['max'] - param['min']
-                value = param['min'] + spread * i / (N - 1)
+                value = param['min'] + spread * i / N
                 values[name] = value
             elif 'link' in param:
                 link_name = param['link']
