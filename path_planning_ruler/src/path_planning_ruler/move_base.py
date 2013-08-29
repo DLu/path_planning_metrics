@@ -83,12 +83,12 @@ class MoveBaseInstance:
 
         self.load_config('/home/dlu/ros/pr2_navigation/pr2_navigation_super_config/params/default_move_base.yaml')
 
-        if config['algorithm'] == 'fuerte':
+        self.set_local_planner(config['local_planner'])
+
+        if 'fuerte' in config['algorithm']:
             self.load_config('/home/dlu/ros/path_planning_metrics/path_planning_data/old_parameters.yaml')
             rospy.set_param('/move_base_node/local_costmap/footprint_padding', 0.015)
             return {}
-
-        self.set_local_planner(config['local_planner'])
 
         self.load_layers( config['global_layers'], True)
         self.load_layers( config['local_layers'], False)
