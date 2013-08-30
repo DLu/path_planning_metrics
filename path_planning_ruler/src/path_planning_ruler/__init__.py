@@ -18,6 +18,7 @@ import traceback, sys
 import yaml
 
 from path_planning_analysis.msg import CycleTimes
+from costmap_2d.msg import CycleTimesG
 
 def finished(state):
     return state==GoalStatus.SUCCEEDED or state==GoalStatus.ABORTED or state==GoalStatus.PREEMPTED
@@ -191,6 +192,9 @@ def load_subscriptions(mb):
     mb.addSubscription('/people', people_msgs.msg.People)
     mb.addSubscription('/move_base_node/global_costmap/cycle_times', CycleTimes)
     mb.addSubscription('/move_base_node/local_costmap/cycle_times', CycleTimes)
+    mb.addSubscription('/move_base_node/global_costmap/cycle_times_G', CycleTimesG)    
+    mb.addSubscription('/move_base_node/local_costmap/cycle_times_G', CycleTimesG)
+
 
 
 def run_scenario(scenario, filename, quiet=False):
