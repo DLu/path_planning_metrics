@@ -20,6 +20,7 @@ if __name__=='__main__':
             if is_smooth:
                 ax.plot(smooth(data, 10))
             else:
-                ax.plot(data)
+                ax.plot(data, label=header)
+    pylab.legend()
     pylab.show()
 
