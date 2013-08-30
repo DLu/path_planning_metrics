@@ -36,6 +36,12 @@ def plot_path(ax, path):
 def to_triple(pose):
     return [pose.x, pose.y, pose.theta]
 
+def process_cycle_times(msg):
+    x = []
+    for event in msg.events:
+        x.append( (event.name, event.time) )
+    return x
+
 class RobotPath:
     def __init__(self, filename):
         self.filename = filename
@@ -44,6 +50,8 @@ class RobotPath:
         self.obstacles = []
         self.local_times = []
         self.global_times = []
+        self.global_update_details = []
+        self.local_update_details = []
         self.other = collections.defaultdict(list)
         try:
             bag = rosbag.Bag(filename, 'r')
@@ -64,6 +72,11 @@ class RobotPath:
                         self.global_times.append(msg.data)
                     else:
                         self.local_times.append(msg.data)
+                elif 'cycle' in topic:
+                    if 'global' in topic:
+                        self.global_update_details.append(process_cycle_times(msg))
+                    else:
+                        self.local_update_details.append(process_cycle_times(msg))
                 else:
                     self.other[topic].append((t,msg))
             bag.close()
@@ -227,7 +240,7 @@ class RobotPath:
     def get_data(self):
         vels = self.get_velocity()
 
-        return {
+        m = {
             't': [t for t,x in self.poses], 
             'poses': [to_triple(x) for t,x in self.poses],
             'object_distances': self.get_distances_to_objects(),
@@ -244,6 +257,14 @@ class RobotPath:
             'global_times': self.global_times,
             'local_times': self.local_times
         }
+
+        if len(self.global_update_details)>0:
+            m['global_update_details'] = self.global_update_details
+        if len(self.local_update_details)>0:
+            m['local_update_details'] = self.local_update_details
+
+        return m
+
 
     def stats(self):
         return self.completed, self.rotate_efficiency, self.translate_efficiency, self.time, self.collisions, self.minimum_distance_to_obstacle, self.average_distance_to_obstacle, self.face_direction_of_travel, self.curvature, self.front_distance, self.left_distance, self.right_distance
