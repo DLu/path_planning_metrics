@@ -40,11 +40,12 @@ def stat_functions():
 class PathStats:
     def __init__(self, filename):
         self.filename = filename
-        folder = os.path.dirname( os.path.abspath(filename) )
+        folder, basefile = os.path.split( os.path.abspath(filename) )
         mkdir_p( folder + '/.cache/' )
         mkdir_p( folder + '/.results/' )
-        self.cachefile = folder + '/.cache/' + filename + '.yaml'
-        self.resultsfile = folder + '/.results/' + filename + '.yaml'
+        self.cachefile = folder + '/.cache/' + basefile + '.yaml'
+        self.resultsfile = folder + '/.results/' + basefile + '.yaml'
+
         self.path_ready = False
         self.data_fields = []
         
