@@ -52,18 +52,45 @@ def multiply(parameterizations, name, val_str):
             newp.append(newm)
     return newp
 
-def parameterize(var1, var2):
+def parameterize(var1, var2, set1, set2):
+    if (var1 and set1) or (var2 and set2):
+        sys.stderr.write("Var and Set can't be used at the same time")
+        exit(0)
+
     parameterizations = [{}]
     param1 = param2 = key1 = key2 = None
 
-    if var1:
-        param1, N_str = var1
-        parameterizations = multiply(parameterizations, param1, N_str)
+    if var1 or set1:
+        if var1:
+            param1, N_str = var1
+            parameterizations = multiply(parameterizations, param1, N_str)
+        else:
+            param1, val1, N_str = set1
+            val1 = int(val1)
+            N = int(N_str)
+            newp = []
+            for p in parameterizations:
+                newm = {param1: (N_str, val1)}
+                newm.update(p)
+                newp.append(newm)
+            parameterizations = newp
 
-        if var2:
-            param2, N_str = var2
+        if var2 or set2:
+            if var2:
+                param2, N_str = var2
+                parameterizations = multiply(parameterizations, param2, N_str)
+            else:
+                param2, val2, N_str = set2
+                val12= int(val2)
+                N = int(N_str)
+                newp = []
+                for p in parameterizations:
+                    newm = {param2: (N_str, val2)}
+                    newm.update(p)
+                    newp.append(newm)
+                parameterizations = newp
+
             key1, key2 = param_keys(param1, param2)
-            parameterizations = multiply(parameterizations, param2, N_str)
             directory = '%(root)s/twoD/%(algorithm)s-%(key1)s-%(key2)s'
             pattern = '%(scenario_key)s-%(value1)s-%(value2)s-%%03d.bag'
         else:
@@ -113,6 +140,8 @@ if __name__=='__main__':
     parser.add_argument('--clean', action='store_true')
     parser.add_argument('--var1', nargs=2)
     parser.add_argument('--var2', nargs=2)
+    parser.add_argument('--set1', nargs=3)
+    parser.add_argument('--set2', nargs=3)
     parser.add_argument('-q', '--quiet', action='store_true')
 
     if '-b' in sys.argv:
@@ -126,13 +155,13 @@ if __name__=='__main__':
             if len(line.strip())==0:
                 continue
             args = parser.parse_args(line.split())
-            parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2)
+            parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2, args.set1, args.set2)
             run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean or a2.clean, a2.quiet or args.quiet)
         f.close()        
     else:
 
         args = parser.parse_args()
-        parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2)
+        parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2, args.set1, args.set2)
         run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean, args.quiet)
 
 
