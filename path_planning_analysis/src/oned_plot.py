@@ -32,6 +32,8 @@ if __name__=='__main__':
 
         if '--completed' in sys.argv and stats['completed']<1.0:
             continue
+        if '--collisions' in sys.argv and stats['collisions']>0.0:
+            continue
 
         for name in headers:
             v = stats[name]
@@ -47,8 +49,12 @@ if __name__=='__main__':
                 data[x].append(y)
 
         bxs = sorted(data.keys())
+        width = 100
+        for a,b in zip(bxs, bxs[1:]):
+            width = min(b-a, width)
+
         bys = [data[k] for k in bxs]
-        plt.boxplot(bys, positions=bxs)
+        plt.boxplot(bys, positions=bxs, widths=width)
     else:
         for key in xs:
             ax.plot(xs[key], ys[key], 'o', label=key)

@@ -57,7 +57,18 @@ if __name__=='__main__':
         vs.append( float(v) )
         data[key].append( float(v) )
 
-    colors = [('black')] + [(pylab.cm.jet(i)) for i in xrange(1,255)] + [('white')]
+    colors = []
+    if '-b' in sys.argv:
+        colors += [('black')]
+    if '-c' in sys.argv:
+        colors += [(pylab.cm.jet(i)) for i in xrange(1,255)]
+    if '-w' in sys.argv:
+        colors += [('white')]
+
+    if len(colors)==0:
+        colors += [(pylab.cm.jet(i)) for i in xrange(1,255)]
+    
+
     new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
 
     xs = sorted(list(xs))
