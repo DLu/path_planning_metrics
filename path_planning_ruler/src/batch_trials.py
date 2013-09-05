@@ -70,7 +70,7 @@ def parameterize(var1, var2, set1, set2):
             N = int(N_str)
             newp = []
             for p in parameterizations:
-                newm = {param1: (N_str, val1)}
+                newm = {param1: (N, val1)}
                 newm.update(p)
                 newp.append(newm)
             parameterizations = newp
@@ -85,7 +85,7 @@ def parameterize(var1, var2, set1, set2):
                 N = int(N_str)
                 newp = []
                 for p in parameterizations:
-                    newm = {param2: (N_str, val2)}
+                    newm = {param2: (N, val2)}
                     newm.update(p)
                     newp.append(newm)
                 parameterizations = newp
