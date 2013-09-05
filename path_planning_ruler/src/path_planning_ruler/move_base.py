@@ -97,10 +97,14 @@ class MoveBaseInstance:
         for param in config.get('parameters', []):
             name = param['name']
             if name in parameterization:
-                (N, i) = parameterization[name]
-                spread = param['max'] - param['min']
-                value = param['min'] + spread * i / N
-                values[name] = value
+                p = parameterization[name]
+                if type(p)==type(float):
+                    values[name] = p
+                else:
+                    (N, i) = parameterization[name]
+                    spread = param['max'] - param['min']
+                    value = param['min'] + spread * i / N
+                    values[name] = value
             elif 'link' in param:
                 link_name = param['link']
                 fn = '/%s/%s'%(self.name, link_name)
