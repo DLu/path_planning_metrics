@@ -1,0 +1,19 @@
+start: [-0.5, 0, 0]
+goal:  [ 0.5, 0, 0]
+objects:
+    box0:
+        type: box
+        size: [10.00,0.01,2]
+        xyz: [0.00,4.50,1]
+    box1:
+        type: box
+        size: [0.01,9.00,2]
+        xyz: [5.00,0.00,1]
+    box2:
+        type: box
+        size: [10.00,0.01,2]
+        xyz: [0.00,-4.50,1]
+    box3:
+        type: box
+        size: [0.01,9.00,2]
+        xyz: [-5.00,0.00,1]
