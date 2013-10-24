@@ -18,7 +18,6 @@ import traceback, sys
 import yaml
 
 from path_planning_analysis.msg import CycleTimes
-from costmap_2d.msg import CycleTimesG
 
 def finished(state):
     return state==GoalStatus.SUCCEEDED or state==GoalStatus.ABORTED or state==GoalStatus.PREEMPTED
@@ -198,7 +197,7 @@ def load_subscriptions(mb):
 
 
 def run_scenario(scenario, filename, quiet=False):
-    rospy.set_param('/nav_experiments/scenario', scenario.scenario)
+    rospy.set_param('/nav_experiments/scenario', scenario.get_scenario())
     g = GazeboHelper(quiet)
     try:
         scenario.spawn(g)
@@ -224,7 +223,7 @@ def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, qu
         if all_present:
             return
 
-    rospy.set_param('/nav_experiments/scenario', scenario.scenario)
+    rospy.set_param('/nav_experiments/scenario', scenario.get_scenario())
     g = GazeboHelper(quiet)
     
     try:
