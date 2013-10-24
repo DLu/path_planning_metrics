@@ -13,7 +13,10 @@ def eval_s(val, params):
     for param in params:
         if param in val:
             val = val.replace(param, str(params[param]))
-    return eval(val)
+    try:                
+        return eval(val)
+    except NameError, e:
+        raise NameError('%s (%s)'%(str(e), val))
 
 def get_pose2d(scenario, key, params):
     pose = Pose2D()
