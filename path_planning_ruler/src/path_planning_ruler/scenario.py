@@ -45,7 +45,8 @@ def to_triple(obj):
     return [obj.x, obj.y, obj.theta]
     
 class GazeboObject:
-    def __init__(self, m, params={}):
+    def __init__(self, name, m, params={}):
+        self.name = name
         self.type = m.get('type', 'box')
         self.size = get_triple(m, 'size', [1,1,1], params)
         self.xyz = get_triple(m, 'xyz', [0,0,0], params)
@@ -77,7 +78,7 @@ class Scenario:
         self.key = os.path.splitext( os.path.basename(filename) )[0]
         self.objects = {}
         for name, obj in scenario.get('objects', {}).iteritems():
-            self.objects[name] = GazeboObject(obj, params)
+            self.objects[name] = GazeboObject(name, obj, params)
         
         self.spawn_names = []
 
@@ -91,7 +92,7 @@ class Scenario:
         self.spawn_names =[]
         people_names = []
         for name, obj in self.objects.iteritems():
-            if t=='box':
+            if obj.type=='box':
                 xml = box(obj.get_spawn_name(), obj.size, obj.xyz, obj.rpy, is_static=True, plugin=(obj.movement is not None))
             else:
                 rospy.logerror("unknown type %s"%t)
