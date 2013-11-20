@@ -18,14 +18,19 @@ if __name__=='__main__':
     ys = collections.defaultdict(list)
 
     headers, bags = analysis_argparse(one=True)
+    limit = 1e80
     
     for filename in bags:
-        path = PathStats(filename)  
+
         fullpath = os.path.abspath(filename)
         parts = fullpath.split('/')
         algorithm, variable = parts[-2].split('-')
         scenario, value, trial = parts[-1].split('-')
 
+        if float(value)>limit:
+            continue
+        
+        path = PathStats(filename)  
         row = []
 
         stats = path.stats()

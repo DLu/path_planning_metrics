@@ -15,7 +15,12 @@ if __name__=='__main__':
     if sys.argv[-1][0:2]=='-p':
         precision = int(sys.argv[-1][2:])
     
-    grouping = 'algorithm' if '--summary' in sys.argv else None
+    if '--summary' in sys.argv:
+        grouping = 'algorithm'
+    elif '--scenario' in sys.argv:
+        grouping = 'scenario'
+    else:
+        grouping = None
     group_data = get_stats(bags, headers, grouping, '--completed' in sys.argv)
 
     data = rotate_stats(group_data, headers)

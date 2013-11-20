@@ -52,6 +52,9 @@ class PathStats:
         code = md5_for_file(self.filename)
         if os.path.exists(self.resultsfile):
             self.results = yaml.load(open(self.resultsfile))
+            if not self.results:
+                self.results = {}
+                
             if self.results.get('hash', '') != code:
                 self.results = {'hash': code}
         else:

@@ -10,6 +10,8 @@ def get_stats(bags, headers, grouping=None, only_completed=False):
         row = []
         if grouping == 'algorithm':
             key = path.get_algorithm()
+        elif grouping == 'scenario':
+            key = path.get_scenario_name()
         else:
             key = filename
 
