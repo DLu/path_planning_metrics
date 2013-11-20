@@ -1,0 +1,20 @@
+goal:   [4,0,0]
+objects:
+    box1:
+        type: box
+        size: [.5,4,2]
+        xyz: [2,0,1]
+    box2:
+        type: box
+        size: [.5,4,2]
+        xyz: [-2,0,1]
+    box3:
+        type: box
+        size: [4,.5,2]
+        xyz: [0,2,1]
+    box4:
+        type: box
+        size: [4,.5,2]
+        xyz: [0,-2,1]
+
+
