@@ -5,6 +5,7 @@ import rospy
 from path_planning_ruler import *
 from path_planning_ruler.scenario import Scenario
 from path_planning_ruler.move_base import *
+from path_planning_ruler.parameterization import *
 import sys
 import argparse
 import os, errno
@@ -42,24 +43,7 @@ def param_keys(s1, s2=None):
 
 basedir = '/home/dlu/Desktop/path_data'
 
-def multiply(parameterizations, name, val_str):
-    vals = int(val_str)
-    newp = []
-    for p in parameterizations:
-        for z in range(vals+1):
-            newm = {name: (vals, z)}
-            newm.update(p)
-            newp.append(newm)
-    return newp
-
 def parameterize(var1, var2, set1, set2):
-    if (var1 and set1) or (var2 and set2):
-        sys.stderr.write("Var and Set can't be used at the same time")
-        exit(0)
-
-    parameterizations = [{}]
-    param1 = param2 = key1 = key2 = None
-
     if var1 or set1:
         if var1:
             param1, N_str = var1
@@ -135,16 +119,14 @@ if __name__=='__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('algorithm', metavar='algorithm.cfg')
-    parser.add_argument('scenarios', metavar='scenario.yaml', nargs='+')
+    parser.add_argument('scenario', metavar='scenario.yaml', nargs='+')
+    parser.add_argument('-v', dest='variables', nargs="+", type=str)
+    parser.add_argument('-c', dest='constants', nargs="+", type=str)
     parser.add_argument("-n", "--num_trials", dest="n", help='Number of trials per configuration', metavar='N', type=int, default=10)
     parser.add_argument('--clean', action='store_true')
-    parser.add_argument('--var1', nargs=2)
-    parser.add_argument('--var2', nargs=2)
-    parser.add_argument('--set1', nargs=3)
-    parser.add_argument('--set2', nargs=3)
     parser.add_argument('-q', '--quiet', action='store_true')
 
-    if '-b' in sys.argv:
+    """    if '-b' in sys.argv:
         p2 = argparse.ArgumentParser()
         p2.add_argument('-b', '--batch', dest="batchfile")
         p2.add_argument('-q', '--quiet', action='store_true')
@@ -158,11 +140,16 @@ if __name__=='__main__':
             parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2, args.set1, args.set2)
             run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean or a2.clean, a2.quiet or args.quiet)
         f.close()        
-    else:
-
+    else:"""
+    if True:
         args = parser.parse_args()
-        parameterizations, directory, pattern, param1, key1, param2, key2 = parameterize(args.var1, args.var2, args.set1, args.set2)
-        run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean, args.quiet)
+        parameterization = Parameterization(args.algorithm, args.variables, args.constants)
+
+        print parameterization.get_folder()
+        for p in parameterization.parameterizations:
+            print parameterization.get_filename('scenario', p, 0)
+
+        #run_one_set(args.algorithm, args.scenarios, args.n, parameterizations, directory, pattern, param1, key1, param2, key2, args.clean, args.quiet)
 
 
 
