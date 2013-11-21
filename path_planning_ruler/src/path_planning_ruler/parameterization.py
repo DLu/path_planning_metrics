@@ -211,6 +211,12 @@ class Parameterization:
 
     def __repr__(self):
         return '===============\n'.join( [repr(x) for x in self.parameterizations] )
+        
+    def to_string(self, p):
+        s = []
+        for k in self.key_params:
+            s.append( '%s:%s'%(k, str(p[k])))
+        return ' '.join(s)
 
     def load_layers(self, layers, is_global):
         for layer in layers:
