@@ -214,7 +214,7 @@ class Parameterization:
         s = scenario
         for key in sorted( self.key_params ):
             s += '-%s'% str(m[key])
-        s += '-%%03d.bag'
+        s += '-%03d.bag'
         return s
 
     def __repr__(self):
