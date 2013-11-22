@@ -21,7 +21,7 @@ def mkdir_p(path):
 basedir = '/home/dlu/Desktop/path_data'
 
 def run_one_set(parameterization, scenarios, n, clean, quiet):
-    m = MoveBaseInstance(quiet=quiet)
+    m = MoveBaseInstance(name=parameterization.node_name, quiet=quiet)
     scenarios = [Scenario(filename) for filename in scenarios]
 
     for p in parameterization.parameterizations:
@@ -34,7 +34,7 @@ def run_one_set(parameterization, scenarios, n, clean, quiet):
             thedir = '%s/%s'%(basedir, parameterization.get_folder())            
             mkdir_p(thedir)
             
-            full_pattern = '%s/%s'%(thedir, parametyerization.get_filename(p) )
+            full_pattern = '%s/%s'%(thedir, parameterization.get_filename(scenario.key, p) )
             run_batch_scenario(m, scenario, n, full_pattern, clean, quiet)
     
 if __name__=='__main__':
@@ -42,7 +42,7 @@ if __name__=='__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('algorithm', metavar='algorithm.cfg')
-    parser.add_argument('scenario', metavar='scenario.yaml', nargs='+')
+    parser.add_argument('scenarios', metavar='scenario.yaml', nargs='+')
     parser.add_argument('-v', dest='variables', nargs="+", type=str)
     parser.add_argument('-c', dest='constants', nargs="+", type=str)
     parser.add_argument("-n", "--num_trials", dest="n", help='Number of trials per configuration', metavar='N', type=int, default=10)

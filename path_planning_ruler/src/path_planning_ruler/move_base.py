@@ -7,7 +7,8 @@ def get_map(name, value):
     return '%s:=%s'%(name, value)
 
 class MoveBaseInstance:
-    def __init__(self, quiet=False):
+    def __init__(self, name, quiet=False):
+        self.name = name
         self.process = None
         self.quiet = quiet
         self.void = open('/dev/null', 'w')

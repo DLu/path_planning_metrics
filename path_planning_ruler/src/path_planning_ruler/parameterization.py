@@ -192,6 +192,14 @@ class Parameterization:
         for k, v in m.iteritems():
             if k[0]!='/':
                 k = '/%s/%s'%(self.node_name, k)
+            if rospy.has_param(k):
+                v2 = rospy.get_param(k)
+                if type(v2)==dict:
+                    v3 = {}
+                    v3.update(v)
+                    v3.update(v2)
+                    v = v3
+
             rospy.set_param(k, v)
 
     def get_folder(self):
@@ -199,14 +207,14 @@ class Parameterization:
             return 'core'
         return '%s-%s'%(self.algorithm, '-'.join( param_keys( sorted( self.key_params) ) ))
 
-    def get_filename(self, scenario, m, i):
+    def get_filename(self, scenario, m):
         if len(self.key_params)==0:
-            return '%s-%s-%03d.bag'%(scenario, self.algorithm)
+            return '%s-%s-%%03d.bag'%(scenario, self.algorithm)
 
         s = scenario
         for key in sorted( self.key_params ):
             s += '-%s'% str(m[key])
-        s += '-%03d.bag'%i
+        s += '-%%03d.bag'
         return s
 
     def __repr__(self):
@@ -219,31 +227,32 @@ class Parameterization:
         return ' '.join(s)
 
     def load_layers(self, layers, is_global):
+        ns = '/%s/%s_costmap'%(self.node_name, 'global' if is_global else 'local')
+        self.all_params['%s/plugins' % ns] = []
         for layer in layers:
             if layer == 'obstacles':
-                self.add_standard_obstacle_layer(is_global, False)
+                self.add_standard_obstacle_layer(ns, False)
             elif layer == 'voxels':
-                self.add_standard_obstacle_layer(is_global, True)
+                self.add_standard_obstacle_layer(ns, True)
             else:
-                self.add_layer(is_global, layer)
+                self.add_layer(ns, layer)
         
-    def add_layer(self, is_global, layer_type, layer_name=None, extra=None):
-        ns = '/%s/%s_costmap'%(self.node_name, 'global' if is_global else 'local')
-        layers = rospy.get_param('%s/plugins'%ns, [])
+    def add_layer(self, ns, layer_type, layer_name=None, extra=None):
+        layers = self.all_params['%s/plugins' % ns]
         if layer_name is None:
             i1 = layer_type.find(':')
             i2 = layer_type.find('Layer', i1)
             layer_name = layer_type[i1+2:i2].lower()
         layers.append( {'name': layer_name, 'type': layer_type} )
-        rospy.set_param('%s/plugins'%ns, layers)
-        if extra is not None:
-            rospy.set_param('%s/%s'%(ns, layer_name), extra)
 
-    def add_standard_obstacle_layer(self, is_global, voxel_layer=True):
+        if extra is not None:
+            self.all_params['%s/%s'%(ns, layer_name)] = extra
+
+    def add_standard_obstacle_layer(self, ns, voxel_layer=True):
         if voxel_layer:
             name = 'costmap_2d::VoxelLayer'
         else:
             name = 'costmap_2d::ObstacleLayer'
 
-        self.add_layer(is_global, name, 'obstacles', yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_data/obstacles.yaml')))
+        self.add_layer(ns, name, 'obstacles', yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_data/obstacles.yaml')))
 
