@@ -123,15 +123,25 @@ class Parameterization:
                 p.set_range(param['default'], param.get('min', None), param.get('max', None))
             self.available_params[name] = p
 
-        for key, value in parse_args(constants):
-            p = self.available_params[key]
-            self.key_params.append(key)
-            p.set_value(value)
-
-        for key, count in parse_args(variables):
-            p = self.available_params[key]
-            self.key_params.append(key)
-            p.set_count(count)
+        for array, is_constant in [(constants, True), (variables, False)]:
+            for key, value in parse_args(array):
+                if key in self.available_params:
+                    p = self.available_params[key]
+                else:
+                    p = None
+                    for pname in self.available_params:
+                        if key in pname:
+                            key = pname
+                            p = self.available_params[key]
+                            break
+                    if p is None:
+                        self.available_params[key]
+                            
+                self.key_params.append(key)
+                if is_constant:
+                    p.set_value(value)
+                else:
+                    p.set_count(value)
 
         self.parameterizations = [{}]
         for name, p in self.available_params.iteritems():
