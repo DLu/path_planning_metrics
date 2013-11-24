@@ -9,6 +9,7 @@ from path_planning_ruler.parameterization import *
 import sys
 import argparse
 import os, errno
+import collections
 
 def mkdir_p(path):
     try:
@@ -23,6 +24,7 @@ basedir = '/home/dlu/Desktop/path_data'
 def run_one_set(parameterization, scenarios, n, clean, quiet):
     m = MoveBaseInstance(name=parameterization.node_name, quiet=quiet)
     scenarios = [Scenario(filename) for filename in scenarios]
+    all_stats = []
 
     for p in parameterization.parameterizations:
         parameterization.set_params(p)
@@ -35,7 +37,10 @@ def run_one_set(parameterization, scenarios, n, clean, quiet):
             mkdir_p(thedir)
             
             full_pattern = '%s/%s'%(thedir, parameterization.get_filename(scenario.key, p) )
-            run_batch_scenario(m, scenario, n, full_pattern, clean, quiet)
+            stats = run_batch_scenario(m, scenario, n, full_pattern, clean, quiet)
+            all_stats.append(stats)
+
+    return all_stats
     
 if __name__=='__main__':
     rospy.init_node('batch_trials_script')
@@ -65,7 +70,14 @@ if __name__=='__main__':
     else:
         list_of_args.append( parser.parse_args() )
         
+    stats = []
     for args in list_of_args:
         parameterization = Parameterization(args.algorithm, args.variables, args.constants)
-        run_one_set(parameterization, args.scenarios, args.n, args.clean, args.quiet)
+        stats += run_one_set(parameterization, args.scenarios, args.n, args.clean, args.quiet) 
+
+    collected = collections.defaultdict(int)
+    for stat in stats:
+        for k, v in stat.iteritems():
+            collected[k] += v
+    print dict(collected)
 

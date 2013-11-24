@@ -216,13 +216,18 @@ def run_scenario(scenario, filename, quiet=False):
 
 
 def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, quiet=False):
+    stats = {'total': n}
     if not clean:
-        all_present = True
+        stats['to_run'] = 0
         for i in range(n):
             filename = filename_pattern % i 
-            all_present = all_present and os.path.exists(filename)
-        if all_present:
-            return
+            if not os.path.exists(filename):
+                stats['to_run'] +=1
+        if stats['to_run'] == 0:
+            return stats
+    else:
+        stats['to_run'] = n
+    stats['run'] = 0
 
     rospy.set_param('/nav_experiments/scenario', scenario.scenario)
     g = GazeboHelper(quiet)
@@ -248,8 +253,12 @@ def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, qu
                 t = rospy.Time.now()
                 data = mb.goto(goal)
                 bag(filename, scenario.get_endpoints(t) + data)
+                stats['run'] += 1
 
             finally:
                 move_base.shutdown()
+    except rospy.service.ServiceException, e:
+        rospy.logerr("SERVICE EXCEPTION")
     finally:
         scenario.unspawn(g)
+    return stats
