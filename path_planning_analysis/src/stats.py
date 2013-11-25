@@ -36,6 +36,9 @@ if __name__=='__main__':
     if grouping is None:
         headers = [''] + headers
     else:
-        headers = ['algorithm', 'count'] + headers
-
+        x = os.path.abspath(bags[0])
+        if 'core' in x:
+            headers = ['algorithm', 'count'] + headers
+        else:
+            headers = x.split('/')[-2].split('-')[1:] + ['count'] + headers
     print_table([headers] + pdata, False, precision)

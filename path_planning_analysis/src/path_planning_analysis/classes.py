@@ -9,7 +9,7 @@ def get_stats(bags, headers, grouping=None, only_completed=False):
         
         row = []
         if grouping == 'algorithm':
-            key = path.get_algorithm()
+            key = path.get_unique()
         else:
             key = filename
 
