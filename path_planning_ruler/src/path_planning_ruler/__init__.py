@@ -17,7 +17,8 @@ import std_msgs.msg
 import traceback, sys
 import yaml
 
-from path_planning_analysis.msg import CycleTimes
+#from path_planning_analysis.msg import CycleTimes
+#from costmap_2d.msg import CycleTimesG
 
 def finished(state):
     return state==GoalStatus.SUCCEEDED or state==GoalStatus.ABORTED or state==GoalStatus.PREEMPTED
@@ -189,10 +190,10 @@ def load_subscriptions(mb):
     mb.addSubscription('/move_base_node/global_costmap/update_time', std_msgs.msg.Float32)
     mb.addSubscription('/move_base_node/local_costmap/update_time', std_msgs.msg.Float32)
     mb.addSubscription('/people', people_msgs.msg.People)
-    mb.addSubscription('/move_base_node/global_costmap/cycle_times', CycleTimes)
-    mb.addSubscription('/move_base_node/local_costmap/cycle_times', CycleTimes)
-    mb.addSubscription('/move_base_node/global_costmap/cycle_times_G', CycleTimesG)    
-    mb.addSubscription('/move_base_node/local_costmap/cycle_times_G', CycleTimesG)
+#    mb.addSubscription('/move_base_node/global_costmap/cycle_times', CycleTimes)
+#    mb.addSubscription('/move_base_node/local_costmap/cycle_times', CycleTimes)
+#    mb.addSubscription('/move_base_node/global_costmap/cycle_times_G', CycleTimesG)    
+#    mb.addSubscription('/move_base_node/local_costmap/cycle_times_G', CycleTimesG)
 
 
 
@@ -215,13 +216,18 @@ def run_scenario(scenario, filename, quiet=False):
 
 
 def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, quiet=False):
+    stats = {'total': n}
     if not clean:
-        all_present = True
+        stats['to_run'] = 0
         for i in range(n):
             filename = filename_pattern % i 
-            all_present = all_present and os.path.exists(filename)
-        if all_present:
-            return
+            if not os.path.exists(filename):
+                stats['to_run'] +=1
+        if stats['to_run'] == 0:
+            return stats
+    else:
+        stats['to_run'] = n
+    stats['run'] = 0
 
     rospy.set_param('/nav_experiments/scenario', scenario.get_scenario())
     g = GazeboHelper(quiet)
@@ -247,8 +253,12 @@ def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, qu
                 t = rospy.Time.now()
                 data = mb.goto(goal)
                 bag(filename, scenario.get_endpoints(t) + data)
+                stats['run'] += 1
 
             finally:
                 move_base.shutdown()
+    except rospy.service.ServiceException, e:
+        rospy.logerr("SERVICE EXCEPTION")
     finally:
         scenario.unspawn(g)
+    return stats

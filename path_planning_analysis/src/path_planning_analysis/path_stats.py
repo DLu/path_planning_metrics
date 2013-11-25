@@ -52,6 +52,9 @@ class PathStats:
         code = md5_for_file(self.filename)
         if os.path.exists(self.resultsfile):
             self.results = yaml.load(open(self.resultsfile))
+            if not self.results:
+                self.results = {}
+                
             if self.results.get('hash', '') != code:
                 self.results = {'hash': code}
         else:
@@ -98,6 +101,9 @@ class PathStats:
 
     def get_algorithm(self):
         return self.filename.split('-')[1]
+
+    def get_unique(self):
+        return '\t'.join(self.filename.split('-')[1:-1])
 
     def stats(self):
         fnes = stat_functions()

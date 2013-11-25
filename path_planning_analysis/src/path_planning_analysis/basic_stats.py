@@ -23,6 +23,18 @@ def translate_efficiency(path):
 
     D0 = dist(path.poses[0], path.poses[-1])
     return inverse_scale(D-D0)
+
+def path_length(path):
+    """METRIC"""
+    D = 0.0
+    p0 = None
+    for p in path.poses:
+        if p0 is None:
+            p0 = p
+        D += dist(p,p0)
+        p0 = p
+
+    return D
     
 def rotate_efficiency(path):
     """METRIC"""
