@@ -14,7 +14,7 @@
   <depend package="path_planning_simulation"/>
   <depend package="path_planning_analysis"/>
   <depend package="people_msgs"/>
-
+  <depend package="twilio_ros"/>
 </package>
 
 

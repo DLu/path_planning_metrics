@@ -6,6 +6,7 @@ from path_planning_ruler import *
 from path_planning_ruler.scenario import Scenario
 from path_planning_ruler.move_base import *
 from path_planning_ruler.parameterization import *
+from twilio_ros import send_text
 import sys
 import argparse
 import os, errno
@@ -45,6 +46,7 @@ def run_one_set(parameterization, scenarios, n, clean, quiet):
 if __name__=='__main__':
     rospy.init_node('batch_trials_script')
 
+    text = False
     parser = argparse.ArgumentParser()
     parser.add_argument('algorithm', metavar='algorithm.cfg')
     parser.add_argument('scenarios', metavar='scenario.yaml', nargs='+')
@@ -53,6 +55,7 @@ if __name__=='__main__':
     parser.add_argument("-n", "--num_trials", dest="n", help='Number of trials per configuration', metavar='N', type=int, default=10)
     parser.add_argument('--clean', action='store_true')
     parser.add_argument('-q', '--quiet', action='store_true')
+    parser.add_argument('-t', '--text', action='store_true')
 
     list_of_args = [] 
     if '-b' in sys.argv:
@@ -60,7 +63,10 @@ if __name__=='__main__':
         p2.add_argument('-b', '--batch', dest="batchfile")
         p2.add_argument('-q', '--quiet', action='store_true')
         p2.add_argument('-c', '--clean', action='store_true')
+        p2.add_argument('-t', '--text', action='store_true')
+
         a2 = p2.parse_args()
+        text = args.text
         f = open(a2.batchfile, 'r')
         for line in f.readlines():
             if len(line.strip())==0:
@@ -68,7 +74,9 @@ if __name__=='__main__':
             list_of_args.append( parser.parse_args(line.split()) )
         f.close()        
     else:
-        list_of_args.append( parser.parse_args() )
+        args = parser.parse_args() 
+        text = args.text
+        list_of_args.append( args )
         
     stats = []
     for args in list_of_args:
@@ -79,5 +87,15 @@ if __name__=='__main__':
     for stat in stats:
         for k, v in stat.iteritems():
             collected[k] += v
-    print dict(collected)
+
+
+    import socket
+    host = socket.gethostname()
+    ready = collected['total']-collected['to_run']+collected['run']
+    s = "Ran %d/%d tests (%d/%d) on %s"%(collected['run'], collected['to_run'], ready, collected['total'], host)
+
+    if text:
+        send_text('+18455271217', s)
+    else:
+        print s
 
