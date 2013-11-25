@@ -28,7 +28,7 @@ def t_test(a,b,one_sided=True):
 if __name__=='__main__':
     headers, bags = analysis_argparse()
     
-    group_data = get_stats(bags, headers, 'algorithm', only_completed=True)
+    group_data = get_stats(bags, headers, 'algorithm', only_completed=True, tabs=False)
 
     if '-m' in sys.argv:
         data = rotate_stats(group_data, headers, filter_minimum=5)

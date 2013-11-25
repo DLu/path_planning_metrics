@@ -2,14 +2,14 @@ import collections
 
 from path_planning_analysis.path_stats import *
 
-def get_stats(bags, headers, grouping=None, only_completed=False):
+def get_stats(bags, headers, grouping=None, only_completed=False, tabs=False):
     data = collections.defaultdict(list)
     for filename in bags:
         path = PathStats(filename)  
         
         row = []
         if grouping == 'algorithm':
-            key = path.get_unique()
+            key = path.get_unique(tabs)
         elif grouping == 'scenario':
             key = path.get_scenario_name()
         else:
