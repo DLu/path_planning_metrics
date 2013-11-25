@@ -26,6 +26,12 @@ class Parameter:
         if i is None:
             return self.value
         else:
+            if type(self.value)==bool:
+                if i==0:
+                    return self.min
+                else:
+                    return self.max
+
             spread = self.max - self.min
             return self.min + spread * i / self.count
 
