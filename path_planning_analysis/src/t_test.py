@@ -30,7 +30,10 @@ if __name__=='__main__':
     
     group_data = get_stats(bags, headers, 'algorithm', only_completed=True)
 
-    data = rotate_stats(group_data, headers, filter_minimum=5)
+    if '-m' in sys.argv:
+        data = rotate_stats(group_data, headers, filter_minimum=5)
+    else:
+        data = rotate_stats(group_data, headers)
     
     pdata = []
 
@@ -55,7 +58,8 @@ if __name__=='__main__':
                     continue
 
                 T = t_test(vals1, vals2,False)
-
+                if '-p' in sys.argv:
+                    print T
                 row.append(T['p'])
             sdata.append(row)
         print_table(sdata, False, 4)
