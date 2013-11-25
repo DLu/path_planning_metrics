@@ -37,7 +37,7 @@ if __name__=='__main__':
         headers = [''] + headers
     else:
         x = os.path.abspath(bags[0])
-        if 'core' in x:
+        if '/core' in x:
             headers = ['algorithm', 'count'] + headers
         else:
             headers = x.split('/')[-2].split('-')[1:] + ['count'] + headers
