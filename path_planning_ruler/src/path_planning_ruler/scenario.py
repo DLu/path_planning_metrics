@@ -4,23 +4,7 @@ from path_planning_simulation.models import *
 import rospy
 import yaml
 import os.path
-from geometry_msgs.msg import Pose2D
 import random
-
-def get_pose2d(scenario, key):
-    pose = Pose2D()
-    if key in scenario:
-        value = scenario[key]
-        if type(value)==type([]):
-            pose.x = value[0]
-            pose.y = value[1]
-            pose.theta = value[2]
-        else:
-            print "Unknown type"
-    return pose
-
-def pose2d_to_pose(pose):
-    return get_pose(pose.x, pose.y, pose.theta)
 
 class Scenario:
     def __init__(self, filename):
