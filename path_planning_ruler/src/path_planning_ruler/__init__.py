@@ -233,6 +233,7 @@ def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, qu
     g = GazeboHelper(quiet)
     
     try:
+        g.spawn_robot_maybe()
         scenario.spawn(g)
         goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
 

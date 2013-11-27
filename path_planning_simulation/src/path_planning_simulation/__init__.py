@@ -62,7 +62,7 @@ class GazeboHelper:
             
     def spawn_robot(self, name):
         description = rospy.get_param('/robot_description')
-        self.spawn_model(name, description, Pose2D(0,0,0))
+        self.spawn_model(name, description, get_pose(0,0,0))
 
     def spawn_model(self, name, xml, pose, frame='/map', namespace=""):
         response = self.spawn_proxy(name, xml, namespace, pose, frame)
