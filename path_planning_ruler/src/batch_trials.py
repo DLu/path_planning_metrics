@@ -22,24 +22,22 @@ def mkdir_p(path):
 
 basedir = '/home/dlu/Desktop/path_data'
 
-def run_one_set(parameterization, scenarios, n, clean, quiet):
+def run_one_set(parameterization, n, clean, quiet):
     m = MoveBaseInstance(name=parameterization.node_name, quiet=quiet)
     all_stats = []
 
     for p in parameterization.parameterizations:
         parameterization.set_params(p)
-        
+        scenario = parameterization.scenario
         if len(parameterization.parameterizations)>1:
             rospy.loginfo( parameterization.to_string(p) )
 
-        for scenario_fn in scenarios:
-            scenario = Scenario(scenario_fn, p)
-            thedir = '%s/%s'%(basedir, parameterization.get_folder())            
-            mkdir_p(thedir)
-            
-            full_pattern = '%s/%s'%(thedir, parameterization.get_filename(scenario.key, p) )
-            stats = run_batch_scenario(m, scenario, n, full_pattern, clean, quiet)
-            all_stats.append(stats)
+        thedir = '%s/%s'%(basedir, parameterization.get_folder())            
+        mkdir_p(thedir)
+        
+        full_pattern = '%s/%s'%(thedir, parameterization.get_filename(scenario.key, p) )
+        stats = run_batch_scenario(m, scenario, n, full_pattern, clean, quiet)
+        all_stats.append(stats)
 
     return all_stats
     
@@ -49,7 +47,7 @@ if __name__=='__main__':
     text = False
     parser = argparse.ArgumentParser()
     parser.add_argument('algorithm', metavar='algorithm.cfg')
-    parser.add_argument('scenarios', metavar='scenario.yaml', nargs='+')
+    parser.add_argument('scenario', metavar='scenario.yaml')
     parser.add_argument('-v', dest='variables', nargs="+", type=str)
     parser.add_argument('-c', dest='constants', nargs="+", type=str)
     parser.add_argument("-n", "--num_trials", dest="n", help='Number of trials per configuration', metavar='N', type=int, default=10)
@@ -80,8 +78,8 @@ if __name__=='__main__':
         
     stats = []
     for args in list_of_args:
-        parameterization = Parameterization(args.algorithm, args.variables, args.constants)
-        stats += run_one_set(parameterization, args.scenarios, args.n, args.clean, args.quiet) 
+        parameterization = Parameterization(args.algorithm, args.scenario, args.variables, args.constants)
+        stats += run_one_set(parameterization, args.n, args.clean, args.quiet) 
 
     collected = collections.defaultdict(int)
     for stat in stats:

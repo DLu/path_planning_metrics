@@ -1,6 +1,6 @@
 vars:
-	gx: {min: -5, max: 5, default: 2}
-	gy: {min: -5, max: 5, default: 0}
-	gt: {min: -3.1415, max: 3.1415, default: 0}
+  gx: {min: -5, max: 5, default: 2}
+  gy: {min: -5, max: 5, default: 0}
+  gt: {min: -3.1415, max: 3.1415, default: 0}
 start: [0, 0, 0]
 goal:  [gx, gy, gt]

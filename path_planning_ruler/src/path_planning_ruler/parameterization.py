@@ -1,3 +1,4 @@
+from path_planning_ruler.scenario import Scenario
 import rospy
 import yaml
 
@@ -8,11 +9,12 @@ DWA_PARAMS = '/home/dlu/ros/pr2_navigation/pr2_navigation_super_config/params/dw
 TPR_PARAMS = '/home/dlu/ros/pr2_navigation/pr2_navigation_config/move_base/base_local_planner_params.yaml'
 
 class Parameter:
-    def __init__(self, name):
+    def __init__(self, name, ns=None):
         self.name = name
         self.value = None
         self.count = None
         self.link = None
+        self.ns = ns
 
     def set_value(self, value):
         self.value = value
@@ -45,7 +47,13 @@ class Parameter:
         self.count = count
 
     def set_link(self, link):
-        self.link = link        
+        self.link = link      
+
+    def get_full_name(self):
+        if self.ns is None:
+            return self.name
+        else:
+            return '%s/%s'%(self.ns, self.name)
 
 def parse_args(param_args):
     a = []
@@ -97,51 +105,22 @@ def param_keys(array):
 
 
 class Parameterization:
-    def __init__(self, algorithm_fn, variables, constants, node_name='move_base_node'):
-        config = yaml.load( open(algorithm_fn) )
+    def __init__(self, algorithm_fn, scenario_fn, variables, constants, node_name='move_base_node'):
         self.node_name = node_name
-        self.all_params = {}
+        self.fixed_params = {}
+        self.available_params = {}
         self.key_params = []
 
-        self.algorithm = config['algorithm']
-        self.all_params['/nav_experiments/algorithm'] = config['algorithm']
-        self.all_params['/nav_experiments/topics'] = config['topics']
-        self.load_config(CORE_COSTMAP)
-        self.load_config(MOVE_BASE)
+        node_ns = '/%s'%node_name
+        self.parse_algorithm_file(algorithm_fn, node_ns)
+        self.parse_scenario_file(scenario_fn)
 
-        self.set_local_planner(config['local_planner'])
-
-        if 'fuerte' in config['algorithm']:
-            self.load_config(OLD_CONFIGURATION)
-            self.all_params['/move_base_node/local_costmap/footprint_padding'] = 0.015
-        else:
-            self.load_layers( config['global_layers'], True)
-            self.load_layers( config['local_layers'], False)
-
-        self.available_params = {}
-
-        for param in config.get('parameters', []):
-            name = param['name']
-            p = Parameter(name)
-            if 'link' in param:
-                p.set_link(param['link'])
-            else:
-                p.set_range(param['default'], param.get('min', None), param.get('max', None))
-            self.available_params[name] = p
+        self.load_config(CORE_COSTMAP, ns=node_ns)
+        self.load_config(MOVE_BASE,    ns=node_ns)
 
         for array, is_constant in [(constants, True), (variables, False)]:
             for key, value in parse_args(array):
-                if key in self.available_params:
-                    p = self.available_params[key]
-                else:
-                    p = None
-                    for pname in self.available_params:
-                        if key in pname:
-                            key = pname
-                            p = self.available_params[key]
-                            break
-                    if p is None:
-                        self.available_params[key]
+                p = self.match_parameter(key)
                             
                 self.key_params.append(key)
                 if is_constant:
@@ -153,15 +132,60 @@ class Parameterization:
         for name, p in self.available_params.iteritems():
             self.multiply(p)
 
+        self.namespaces = ['/nav_experiments', node_ns]
+
+    def parse_algorithm_file(self, filename, node_ns):
+        config = yaml.load( open(filename) )
+        self.algorithm = config['algorithm']
+        self.fixed_params['/nav_experiments/algorithm'] = config['algorithm']
+        self.fixed_params['/nav_experiments/topics'] = config['topics']
+
+        self.set_local_planner(config['local_planner'], node_ns)
+
+        if 'fuerte' in config['algorithm']:
+            self.load_config(OLD_CONFIGURATION, ns=node_ns)
+            self.fixed_params['/move_base_node/local_costmap/footprint_padding'] = 0.015
+        else:
+            self.load_layers( config['global_layers'], True, node_ns)
+            self.load_layers( config['local_layers'], False, node_ns)
+
+        for param in config.get('parameters', []):
+            name = param['name']
+            p = Parameter(name, ns=node_ns)
+            if 'link' in param:
+                p.set_link(param['link'])
+            else:
+                p.set_range(param['default'], param.get('min', None), param.get('max', None))
+            self.available_params[name] = p
+
+    def parse_scenario_file(self, filename):
+        self.scenario = Scenario(filename)
+        for name, m in self.scenario.vars.iteritems():
+            p = Parameter(name, ns='/nav_experiments/scenario_params')
+            p.set_range(m['default'], m['min'], m['max'])
+            self.available_params[name] = p
+
+
     def load_config(self, filename, ns=None):
         config = yaml.load( open(filename) )
         m = {}
-        namespace = '/%s'%self.node_name
-        if ns is not None:
-            namespace += '/%s'%ns
         for k,v in config.iteritems():
-            m["%s/%s"%(namespace,k)] = v
-        self.all_params.update(m)
+            if ns is None:
+                m[k] = v
+            else:
+                m["%s/%s"%(ns,k)] = v
+        self.fixed_params.update(m)
+
+    def match_parameter(self, key):
+        if key in self.available_params:
+            return self.available_params[key]
+
+        for pname in self.available_params:
+            if key in pname:
+                key = pname
+                return self.available_params[key]
+
+        return self.available_params[key] # Will throw appropriate error        
 
     def multiply(self, param):
         if param.name in self.parameterizations[0]:
@@ -188,26 +212,29 @@ class Parameterization:
                     newp.append(newm)
         self.parameterizations = newp
 
-    def set_local_planner(self, name):
-        self.all_params['/%s/base_local_planner'%self.node_name] = name
+    def set_local_planner(self, name, node_ns):
+        self.fixed_params['%s/base_local_planner'%node_ns] = name
 
         if 'dwa' in name:
-            self.load_config(DWA_PARAMS, ns='DWAPlannerROS')
+            self.load_config(DWA_PARAMS, ns='%s/DWAPlannerROS'% node_ns)
         elif 'TrajectoryPlanner' in name:
-            self.load_config(TPR_PARAMS, ns='TrajectoryPlannerROS')
+            self.load_config(TPR_PARAMS, ns='%s/TrajectoryPlannerROS' % node_ns)
             rospy.set_param('/%s/move_slow_and_clear/planner_namespace'%self.name, 'TrajectoryPlannerROS')
 
     def set_params(self, m):
-        pname = '/%s'%self.node_name
-        if rospy.has_param(pname):
-            rospy.delete_param(pname)
-        self.set_params_(self.all_params)
+        for ns in self.namespaces:
+            if rospy.has_param(ns):
+                rospy.delete_param(ns)
+        self.set_params_(self.fixed_params)
         self.set_params_(m)
+        self.scenario.parameterize(m)
+        rospy.set_param('/nav_experiments/scenario', self.scenario.get_scenario())
 
     def set_params_(self, m):
         for k, v in m.iteritems():
             if k[0]!='/':
-                k = '/%s/%s'%(self.node_name, k)
+                p = self.available_params[k]
+                k = p.get_full_name()
             if rospy.has_param(k):
                 v2 = rospy.get_param(k)
                 if type(v2)==dict:
@@ -242,9 +269,9 @@ class Parameterization:
             s.append( '%s:%s'%(k, str(p[k])))
         return ' '.join(s)
 
-    def load_layers(self, layers, is_global):
-        ns = '/%s/%s_costmap'%(self.node_name, 'global' if is_global else 'local')
-        self.all_params['%s/plugins' % ns] = []
+    def load_layers(self, layers, is_global, ns):
+        ns = '%s/%s_costmap'%(ns, 'global' if is_global else 'local')
+        self.fixed_params['%s/plugins' % ns] = []
         for layer in layers:
             if layer == 'obstacles':
                 self.add_standard_obstacle_layer(ns, False)
@@ -254,7 +281,7 @@ class Parameterization:
                 self.add_layer(ns, layer)
         
     def add_layer(self, ns, layer_type, layer_name=None, extra=None):
-        layers = self.all_params['%s/plugins' % ns]
+        layers = self.fixed_params['%s/plugins' % ns]
         if layer_name is None:
             i1 = layer_type.find(':')
             i2 = layer_type.find('Layer', i1)
@@ -262,7 +289,7 @@ class Parameterization:
         layers.append( {'name': layer_name, 'type': layer_type} )
 
         if extra is not None:
-            self.all_params['%s/%s'%(ns, layer_name)] = extra
+            self.fixed_params['%s/%s'%(ns, layer_name)] = extra
 
     def add_standard_obstacle_layer(self, ns, voxel_layer=True):
         if voxel_layer:

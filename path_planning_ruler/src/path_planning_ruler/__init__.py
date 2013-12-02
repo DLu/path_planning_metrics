@@ -195,26 +195,6 @@ def load_subscriptions(mb):
 #    mb.addSubscription('/move_base_node/global_costmap/cycle_times_G', CycleTimesG)    
 #    mb.addSubscription('/move_base_node/local_costmap/cycle_times_G', CycleTimesG)
 
-
-
-def run_scenario(scenario, filename, quiet=False):
-    rospy.set_param('/nav_experiments/scenario', scenario.get_scenario())
-    g = GazeboHelper(quiet)
-    try:
-        scenario.spawn(g)
-        scenario.reset(g)
-        t = rospy.Time.now()
-
-        mb = MoveBaseClient()
-        load_subscriptions(mb)
-
-        goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
-        data = mb.goto(goal)
-        bag(filename, scenario.get_endpoints(t) + data)
-    finally:
-        scenario.unspawn(g)
-
-
 def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, quiet=False):
     stats = {'total': n}
     if not clean:
@@ -229,7 +209,6 @@ def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, qu
         stats['to_run'] = n
     stats['run'] = 0
 
-    rospy.set_param('/nav_experiments/scenario', scenario.get_scenario())
     g = GazeboHelper(quiet)
     
     try:

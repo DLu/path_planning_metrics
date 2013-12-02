@@ -42,11 +42,15 @@ class GazeboObject:
             return None
 
 class Scenario:
-    def __init__(self, filename, params={}):
-        scenario = yaml.load( open(filename) )
+    def __init__(self, filename):
+        self.key = os.path.splitext( os.path.basename(filename) )[0]
+        self.scenario = yaml.load( open(filename) )
+        self.vars = self.scenario.get('vars', {})
+    
+    def parameterize(self, params={}):
+        scenario = self.scenario
         self.start = get_pose2d(scenario, 'start', params)
         self.goal = get_pose2d(scenario, 'goal', params)
-        self.key = os.path.splitext( os.path.basename(filename) )[0]
         self.objects = {}
         for name, obj in scenario.get('objects', {}).iteritems():
             self.objects[name] = GazeboObject(name, obj, params)
