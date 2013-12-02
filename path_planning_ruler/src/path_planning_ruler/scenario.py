@@ -4,46 +4,8 @@ from path_planning_simulation.models import *
 import rospy
 import yaml
 import os.path
-from geometry_msgs.msg import Pose2D
 import random
 
-def eval_s(val, params):
-    if type(val)==float or type(val)==int:
-        return val
-    for param in params:
-        if param in val:
-            val = val.replace(param, str(params[param]))
-    try:                
-        return eval(val)
-    except NameError, e:
-        raise NameError('%s (%s)'%(str(e), val))
-
-def get_pose2d(scenario, key, params):
-    pose = Pose2D()
-    if key in scenario:
-        value = scenario[key]
-        if type(value)==type([]):
-            pose.x =     eval_s(value[0], params)
-            pose.y =     eval_s(value[1], params)
-            pose.theta = eval_s(value[2], params)
-        else:
-            print "Unknown type"
-    return pose
-
-def pose2d_to_pose(pose):
-    return get_pose(pose.x, pose.y, pose.theta)
-    
-def get_triple(obj, name, default, params):
-    if name not in obj:
-        return default
-    val = []
-    for a in obj[name]:
-        val.append( eval_s(a, params) )
-    return val
-    
-def to_triple(obj):
-    return [obj.x, obj.y, obj.theta]
-    
 class GazeboObject:
     def __init__(self, name, m, params={}):
         self.name = name

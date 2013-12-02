@@ -18,6 +18,7 @@
   <!-- Controllers that come up started -->
   <node name="default_controllers_spawner"
         pkg="pr2_controller_manager" type="spawner" output="screen"
+	respawn="true"
         args="--wait-for=/calibrated base_controller base_odometry head_traj_controller laser_tilt_controller torso_controller" />
 
   <!-- Nodes on top of the controllers -->

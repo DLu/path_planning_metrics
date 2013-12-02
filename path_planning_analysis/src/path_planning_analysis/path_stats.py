@@ -102,8 +102,9 @@ class PathStats:
     def get_algorithm(self):
         return self.filename.split('-')[1]
 
-    def get_unique(self):
-        return '\t'.join(self.filename.split('-')[1:-1])
+    def get_unique(self, tabs=True):
+        c = '\t' if tabs else '/'
+        return c.join(self.filename.split('-')[1:-1])
 
     def stats(self):
         fnes = stat_functions()
