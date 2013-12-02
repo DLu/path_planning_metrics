@@ -21,7 +21,11 @@ if __name__=='__main__':
         grouping = 'scenario'
     else:
         grouping = None
-    group_data = get_stats(bags, headers, grouping, '--completed' in sys.argv)
+
+    full_path = os.path.abspath(bags[0])
+    simple = '/core' in full_path
+
+    group_data = get_stats(bags, headers, grouping, '--completed' in sys.argv, tabs=not simple)
 
     data = rotate_stats(group_data, headers)
     
@@ -40,10 +44,8 @@ if __name__=='__main__':
 
     if grouping is None:
         headers = [''] + headers
+    elif simple:
+        headers = ['algorithm', 'count'] + headers
     else:
-        x = os.path.abspath(bags[0])
-        if '/core' in x:
-            headers = ['algorithm', 'count'] + headers
-        else:
-            headers = x.split('/')[-2].split('-')[1:] + ['count'] + headers
+        headers = full_path.split('/')[-2].split('-')[1:] + ['count'] + headers
     print_table([headers] + pdata, False, precision)
