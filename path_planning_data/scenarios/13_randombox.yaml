@@ -1,0 +1,11 @@
+vars:
+  size: {min: 0.1, max: 1, default: 0.5}
+goal:  [4, 0, 0]
+objects:
+    box1:
+        type: box
+        size: [size,size,size]
+        xyz: [2,0,size/2]
+        rpy: [0,0,0]
+
+

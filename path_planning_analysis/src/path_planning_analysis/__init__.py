@@ -85,7 +85,11 @@ class RobotPath:
             else:
                 self.valid = True
 
-            scenario_objects = self.get_scenario().get('objects', {})
+            pmap = self.other['/parameters']
+            self.scenario = self.get_scenario()
+            self.scenario.parameterize(pmap['/nav_experiments/scenario'])
+
+            scenario_objects = self.scenario.get('objects', {})
             self.object_field = ObjectField(scenario_objects, self.obstacles, self.t0)
         except:
             sys.stderr.write("Cannot read bag file %s\n" % filename)

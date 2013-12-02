@@ -149,7 +149,7 @@ class MoveBaseClient:
         self.other_data.append( (t, '/footprint', footprint) )
 
         # save the rest of the configuration
-        params = rospy.get_param('/move_base_node')
+        params = rospy.get_param('/')
         params_str = std_msgs.msg.String()
         params_str.data = yaml.dump(params, default_flow_style=False)
         self.other_data.append( (t, '/parameters', params_str) )
