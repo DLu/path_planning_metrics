@@ -5,6 +5,7 @@ from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
 from geometry_msgs.msg import Pose2D
+import subprocess
 
 SET_STATE_NAME = '/gazebo/set_model_state'
 SPAWN_NAME = '/gazebo/spawn_gazebo_model'
@@ -84,5 +85,6 @@ class GazeboHelper:
             return
         else:
             self.spawn_robot(name)
+            subprocess.call('rosnode kill default_controllers_spawner')
 
 
