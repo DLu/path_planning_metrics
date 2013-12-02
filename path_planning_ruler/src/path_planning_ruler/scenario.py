@@ -32,6 +32,15 @@ class GazeboObject:
             m['class'] = 'person'
         return m
 
+    def get_xml(self):
+        if self.type=='box':
+            return box(self.get_spawn_name(), self.size, 
+                        self.xyz, self.rpy, is_static=True, 
+                        plugin=(self.movement is not None))
+        else:
+            rospy.logerror("unknown type %s"%t)
+            return None
+
 class Scenario:
     def __init__(self, filename, params={}):
         scenario = yaml.load( open(filename) )
@@ -54,15 +63,16 @@ class Scenario:
         self.spawn_names =[]
         people_names = []
         for name, obj in self.objects.iteritems():
-            if obj.type=='box':
-                xml = box(obj.get_spawn_name(), obj.size, obj.xyz, obj.rpy, is_static=True, plugin=(obj.movement is not None))
-            else:
-                rospy.logerror("unknown type %s"%t)
+            xml = obj.get_xml()
+            spawn_name = obj.get_spawn_name()
+            if not xml:
                 continue
-            gazebo.spawn_model(name, xml, get_pose(obj.xyz[0], obj.xyz[1], obj.rpy[2]))
+
+            gazebo.spawn_model(spawn_name, xml, 
+                                get_pose(obj.xyz[0], obj.xyz[1], obj.rpy[2]))
             
             if obj.is_person:
-                people_names.append(name)
+                people_names.append(spawn_name)
         rospy.set_param('/nav_experiments/people', people_names)
 
     def unspawn(self, gazebo):

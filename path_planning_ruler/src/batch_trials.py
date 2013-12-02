@@ -24,7 +24,6 @@ basedir = '/home/dlu/Desktop/path_data'
 
 def run_one_set(parameterization, scenarios, n, clean, quiet):
     m = MoveBaseInstance(name=parameterization.node_name, quiet=quiet)
-    scenarios = [Scenario(filename) for filename in scenarios]
     all_stats = []
 
     for p in parameterization.parameterizations:
@@ -33,7 +32,8 @@ def run_one_set(parameterization, scenarios, n, clean, quiet):
         if len(parameterization.parameterizations)>1:
             rospy.loginfo( parameterization.to_string(p) )
 
-        for scenario in scenarios:
+        for scenario_fn in scenarios:
+            scenario = Scenario(scenario_fn, p)
             thedir = '%s/%s'%(basedir, parameterization.get_folder())            
             mkdir_p(thedir)
             
