@@ -42,10 +42,16 @@ class GazeboObject:
             return None
 
 class Scenario:
-    def __init__(self, filename):
-        self.key = os.path.splitext( os.path.basename(filename) )[0]
-        self.scenario = yaml.load( open(filename) )
-        self.vars = self.scenario.get('vars', {})
+    def __init__(self, filename=None, the_dict=None):
+        if filename is not None:
+            self.key = os.path.splitext( os.path.basename(filename) )[0]
+            self.scenario = yaml.load( open(filename) )
+            self.vars = self.scenario.get('vars', {})
+        else:
+            self.key = the_dict['key']
+            self.scenario = the_dict
+            self.vars =[]
+            self.parameterize()
     
     def parameterize(self, params={}):
         scenario = self.scenario
@@ -62,6 +68,9 @@ class Scenario:
 
     def get_goal(self):
         return self.goal
+
+    def get_objects(self):
+        return self.objects
 
     def spawn(self, gazebo ):
         self.spawn_names =[]

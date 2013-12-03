@@ -6,6 +6,7 @@ import collections
 import pylab
 import yaml
 from math import sin, cos, sqrt, pi, atan2
+from path_planning_ruler.scenario import Scenario
 from path_planning_analysis.object_field import ObjectField
 from geometry_msgs.msg import Polygon as RosPolygon, Point32
 PIx2 = pi * 2
@@ -53,6 +54,8 @@ class RobotPath:
         self.global_update_details = []
         self.local_update_details = []
         self.other = collections.defaultdict(list)
+        self.params = None
+
         try:
             bag = rosbag.Bag(filename, 'r')
             for topic, msg, t in bag.read_messages():
@@ -77,6 +80,8 @@ class RobotPath:
                         self.global_update_details.append(process_cycle_times(msg))
                     else:
                         self.local_update_details.append(process_cycle_times(msg))
+                elif topic=='/parameters':
+                    self.params = yaml.load(msg.data)
                 else:
                     self.other[topic].append((t,msg))
             bag.close()
@@ -85,11 +90,11 @@ class RobotPath:
             else:
                 self.valid = True
 
-            pmap = self.other['/parameters']
-            self.scenario = self.get_scenario()
-            self.scenario.parameterize(pmap['/nav_experiments/scenario'])
+            params = self.params['nav_experiments']['scenario']
+            params['key'] = self.get_scenario_name()
+            self.scenario = Scenario(the_dict=params)
 
-            scenario_objects = self.scenario.get('objects', {})
+            scenario_objects = self.scenario.get_objects()
             self.object_field = ObjectField(scenario_objects, self.obstacles, self.t0)
         except:
             sys.stderr.write("Cannot read bag file %s\n" % filename)
@@ -236,10 +241,6 @@ class RobotPath:
 
     def get_algorithm(self):
         return self.filename.split('-')[1]
-
-    def get_scenario(self):
-        #TODO dynamically code this
-        return yaml.load(open('/home/dlu/ros/path_planning_metrics/path_planning_data/scenarios/%s.yaml'%self.get_scenario_name()))
 
     def get_data(self):
         vels = self.get_velocity()

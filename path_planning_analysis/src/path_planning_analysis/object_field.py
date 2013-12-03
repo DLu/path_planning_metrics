@@ -177,16 +177,16 @@ class ObjectField:
         self.static_objects = {}
         self.dynamic_objects = {}
 
-        for name, m in scenario.iteritems():
-            t = m.get('type', 'box')
-            size = m.get('size', [1,1,1])
-            obj = {'type': t, 'size': size, 'person': m.get('class', '')=='person'}
+        for name, obj in scenario.iteritems():
+            t = obj.type
+            size = obj.size
+            new_obj = {'type': t, 'size': size, 'person': obj.is_person}
 
-            if 'movement' not in m:
-                p = get_pose_from_scenario(name, m)
-                obj['pose'] = p
+            if obj.movement is None:
+                p = get_pose_from_scenario(name, obj)
+                new_obj['pose'] = p
                 get_polygon(p, size, t)
-                self.static_objects[name] = obj
+                self.static_objects[name] = new_obj
             else:
                 poses = []
                 for t, state in simulation_states: 
@@ -194,9 +194,9 @@ class ObjectField:
                         continue
                     p = get_pose_from_state(name, state)
                     poses.append((t-t0, p))
-                obj['poses'] = sorted(poses)
-                obj['polygons'] = [None] * len(poses)
-                self.dynamic_objects[name] = obj
+                new_obj['poses'] = sorted(poses)
+                new_obj['polygons'] = [None] * len(poses)
+                self.dynamic_objects[name] = new_obj
 
     def get_polygons(self, t0, person=False):
         polygons = {}
