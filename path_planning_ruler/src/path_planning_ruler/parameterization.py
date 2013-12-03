@@ -83,9 +83,12 @@ def all_unique(s):
 
 def param_keys(array):
     bits = []
-    for s in array:
-        a = s.split('/')[1:]
-        bits.append(a)
+    if '/' in array[0]:
+        for s in array:
+            a = s.split('/')[1:]
+            bits.append(a)
+    else:
+        bits = array
 
     last_words = [a[-1] for a in bits]
 
