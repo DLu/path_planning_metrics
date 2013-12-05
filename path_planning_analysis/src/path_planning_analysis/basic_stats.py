@@ -11,6 +11,15 @@ def completed(path):
     angle = path.get_angle_to_goal()
     return 1.0 if dist < 0.2 and angle < .2 else 0.0
 
+def distance_to_goal(path):
+    """METRIC"""
+    return path.get_distance_to_goal()
+
+def average_distance_to_goal(path):
+    """METRIC"""
+    x = [path.get_distance_to_goal(i) for i in range(path.get_num_poses())]
+    return average(x)
+
 def translate_efficiency(path):
     """METRIC"""
     D = 0.0
@@ -48,13 +57,17 @@ def rotate_efficiency(path):
     A0 = path.get_angle_to_goal()
     return inverse_scale(A-A0)
 
-def face_direction_of_travel(path, mag_limit=0.1):
-    """METRIC"""
+def direction_of_travel_vector(path, mag_limit=0.1):
     angles = [pose.theta for pose in path.poses]
     products = []
     for angle1, angle2, mag in zip(angles, path.headings, path.speeds):
         if mag > mag_limit:
             products.append( a_dist_helper(angle1, angle2) )
+    return products
+
+def face_direction_of_travel(path, mag_limit=0.1):
+    """METRIC"""
+    products = direction_of_travel_vector(path, mag_limit)
     m = average(products)
     return inverse_scale(m)
 
