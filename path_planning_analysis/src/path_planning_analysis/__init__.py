@@ -90,11 +90,15 @@ class RobotPath:
             else:
                 self.valid = True
 
-            params = self.params['nav_experiments']['scenario']
-            params['key'] = self.get_scenario_name()
-            self.scenario = Scenario(the_dict=params)
+            if 'nav_experiments' in self.params:
+                params = self.params['nav_experiments']['scenario']
+                params['key'] = self.get_scenario_name()
+                self.scenario = Scenario(the_dict=params)
+                scenario_objects = self.scenario.get_objects()
+            else:
+                # TODO: Hack for backward compatibility
+                scenario_objects = {}
 
-            scenario_objects = self.scenario.get_objects()
             self.object_field = ObjectField(scenario_objects, self.obstacles, self.t0)
         except:
             sys.stderr.write("Cannot read bag file %s\n" % filename)
