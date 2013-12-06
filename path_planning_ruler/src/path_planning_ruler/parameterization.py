@@ -124,8 +124,8 @@ class Parameterization:
         for array, is_constant in [(constants, True), (variables, False)]:
             for key, value in parse_args(array):
                 p = self.match_parameter(key)
-                            
-                self.key_params.append(key)
+
+                self.key_params.append(p.name)
                 if is_constant:
                     p.set_value(value)
                 else:
