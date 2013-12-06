@@ -40,6 +40,7 @@ def stat_functions():
 class PathStats:
     def __init__(self, filename):
         self.filename = filename
+        self.calculate_params()
         folder, basefile = os.path.split( os.path.abspath(filename) )
         mkdir_p( folder + '/.cache/' )
         mkdir_p( folder + '/.results/' )
@@ -97,14 +98,28 @@ class PathStats:
         self.path_ready = True
 
     def get_scenario_name(self):
-        return self.filename.split('-')[0]
+        return self.params['scenario']
 
     def get_algorithm(self):
-        return self.filename.split('-')[1]
+        return self.params['algorithm']
 
     def get_unique(self, tabs=True):
         c = '\t' if tabs else '/'
         return c.join(self.filename.split('-')[1:-1])
+
+    def calculate_params(self):
+        full = os.path.abspath(self.filename)
+        folder, filename = full.split('/')[-2:]
+        fields = folder.split('-')
+        pnames = fields[1:]
+        filename = filename[:-4]
+        values = filename.split('-')
+        pvals = map(eval, values[1:-1])
+        self.params = dict(zip(pnames, pvals))
+        self.params.update({'algorithm': fields[0], 'scenario': values[0], 'trial': values[-1]})
+
+    def get_params(self):
+        return self.params
 
     def stats(self):
         fnes = stat_functions()
@@ -132,4 +147,7 @@ class PathStats:
 
     def get_angle_to_goal(self, index=-1):
         return a_dist(self.goal_pose, self.poses[index])
+
+    def get_num_poses(self):
+        return len(self.poses)
 
