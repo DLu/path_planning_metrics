@@ -61,12 +61,12 @@ if __name__=='__main__':
                 scenario.spawn(g)
                 goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
 
-                for i in range(n):
+                for i in range(args.n):
                     filename = parameterization.get_full_filename(p, i)
                     if os.path.exists(filename) and not args.clean:
                         continue
 
-                    rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, n))
+                    rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, args.n))
                    
                     try:
                         scenario.reset(g)

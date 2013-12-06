@@ -258,7 +258,7 @@ class Parameterization:
         if len(self.key_params)==0:
             return '%s-%s-%03d.bag'%(scenario, self.algorithm, i)
 
-        s = scenario
+        s = self.scenario.key
         for key in sorted( self.key_params ):
             s += '-%s'% str(m[key])
         s += '-%03d.bag'%i
