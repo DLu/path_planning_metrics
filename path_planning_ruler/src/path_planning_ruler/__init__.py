@@ -51,9 +51,13 @@ class MoveBaseClient:
         self.subscriptions = []
         self.subscribers = []
 
+        printed = False
         while not self.ac.wait_for_server(rospy.Duration(5.0)) and not rospy.is_shutdown():
+            printed = True
             rospy.loginfo('Waiting for move_base server')
-        rospy.loginfo('Got move_base server')
+
+        if printed:
+            rospy.loginfo('Got move_base server')
         
         if rospy.is_shutdown():
             exit(1)

@@ -80,7 +80,7 @@ if __name__=='__main__':
                     finally:
                         move_base.shutdown()
                 except rospy.service.ServiceException, e:
-                    rospy.logerr("SERVICE EXCEPTION")
+                    rospy.logerr("SERVICE EXCEPTION: %s" % str(e) )
                 finally:
                     scenario.unspawn(g)
 
