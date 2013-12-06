@@ -14,8 +14,12 @@ if __name__=='__main__':
 
     groups = collections.defaultdict(list)
     i = 0
+    s0 = ''
     for filename in bags:
-        print float(i)/len(bags)
+        s = '%.2f'%(float(i)/len(bags))
+        if s!=s0:
+            print s
+            s0 = s
         i+=1
         path = PathStats(filename)  
         stats = path.stats()
@@ -46,12 +50,13 @@ if __name__=='__main__':
         else:
             groups['other'].append(path)
 
-    for group, paths in groups.iteritems():
-        print "=========%s================="%group
-        for path in sorted(paths):
-            print path.filename
+    if True:
+        for group, paths in groups.iteritems():
+            print "=========%s================="%group
+            for path in sorted(paths):
+                print path.filename
+            print
         print
-    print
 
     for group, paths in groups.iteritems():
         count = len(paths)
