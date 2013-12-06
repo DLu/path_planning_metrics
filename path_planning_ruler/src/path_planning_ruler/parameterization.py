@@ -108,7 +108,8 @@ def param_keys(array):
 
 
 class Parameterization:
-    def __init__(self, algorithm_fn, scenario_fn, variables, constants, node_name='move_base_node'):
+    def __init__(self, algorithm_fn, scenario_fn, variables, constants, basedir='.', node_name='move_base_node'):
+        self.basedir = basedir
         self.node_name = node_name
         self.fixed_params = {}
         self.available_params = {}
@@ -250,18 +251,21 @@ class Parameterization:
 
     def get_folder(self):
         if len(self.key_params)==0:
-            return 'core'
-        return '%s-%s'%(self.algorithm, '-'.join( param_keys( sorted( self.key_params) ) ))
+            return '%s/core'%self.basedir
+        return '%s/%s-%s'%(self.basedir, self.algorithm, '-'.join( param_keys( sorted( self.key_params) ) ))
 
-    def get_filename(self, scenario, m):
+    def get_filename(self, m, i):
         if len(self.key_params)==0:
-            return '%s-%s-%%03d.bag'%(scenario, self.algorithm)
+            return '%s-%s-%03d.bag'%(scenario, self.algorithm, i)
 
         s = scenario
         for key in sorted( self.key_params ):
             s += '-%s'% str(m[key])
-        s += '-%03d.bag'
+        s += '-%03d.bag'%i
         return s
+
+    def get_full_filename(self, m, i):
+        return '%s/%s'%(self.get_folder(), self.get_filename(m, i))
 
     def __repr__(self):
         return '===============\n'.join( [repr(x) for x in self.parameterizations] )

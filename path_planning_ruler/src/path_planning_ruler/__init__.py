@@ -1,7 +1,5 @@
 import rospy
-import rosbag
 import tf
-import os.path
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseFeedback
 from actionlib import SimpleActionClient
@@ -165,80 +163,28 @@ class MoveBaseClient:
         dt = abs(self.goal[2]-pose.theta)
         rospy.loginfo( "dx: %.2f dy: %.2f dt: %d"%(dx, dy, int(dt*180/3.141)) )
 
-def bag(filename, data):
-    b = rosbag.Bag(filename, 'w', compression=rosbag.Compression.BZ2)
-    for time, topic, msg in sorted(data):
-        b.write(topic, msg, t=time)
-    b.close()
+    def load_subscriptions(self):
+        #TODO: Load classes dynamically
+        topics = rospy.get_param('/nav_experiments/topics', [])
+        for topic in topics:
+            if 'plan' in topic:
+                self.addSubscription(topic, Path)
+            elif 'command' in topic:
+                self.addSubscription(topic, Twist)
+            elif 'costmap_updates' in topic:
+                self.addSubscription(topic, OccupancyGridUpdate)
+            elif 'costmap/costmap' in topic:
+                self.addSubscription(topic, OccupancyGrid)
+            else:
+                rospy.logerror("unknown type for", topic)
+        self.addSubscription('/collisions', std_msgs.msg.String)
+        self.addSubscription('/simulation_state', ModelStates)
+        self.addSubscription('/move_base_node/global_costmap/update_time', std_msgs.msg.Float32)
+        self.addSubscription('/move_base_node/local_costmap/update_time', std_msgs.msg.Float32)
+        self.addSubscription('/people', people_msgs.msg.People)
+    #    mb.addSubscription('/move_base_node/global_costmap/cycle_times', CycleTimes)
+    #    mb.addSubscription('/move_base_node/local_costmap/cycle_times', CycleTimes)
+    #    mb.addSubscription('/move_base_node/global_costmap/cycle_times_G', CycleTimesG)    
+    #    mb.addSubscription('/move_base_node/local_costmap/cycle_times_G', CycleTimesG)
 
-def load_subscriptions(mb):
-    #TODO: Load classes dynamically
-    topics = rospy.get_param('/nav_experiments/topics', [])
-    for topic in topics:
-        if 'plan' in topic:
-            mb.addSubscription(topic, Path)
-        elif 'command' in topic:
-            mb.addSubscription(topic, Twist)
-        elif 'costmap_updates' in topic:
-            mb.addSubscription(topic, OccupancyGridUpdate)
-        elif 'costmap/costmap' in topic:
-            mb.addSubscription(topic, OccupancyGrid)
-        else:
-            rospy.logerror("unknown type for", topic)
-    mb.addSubscription('/collisions', std_msgs.msg.String)
-    mb.addSubscription('/simulation_state', ModelStates)
-    mb.addSubscription('/move_base_node/global_costmap/update_time', std_msgs.msg.Float32)
-    mb.addSubscription('/move_base_node/local_costmap/update_time', std_msgs.msg.Float32)
-    mb.addSubscription('/people', people_msgs.msg.People)
-#    mb.addSubscription('/move_base_node/global_costmap/cycle_times', CycleTimes)
-#    mb.addSubscription('/move_base_node/local_costmap/cycle_times', CycleTimes)
-#    mb.addSubscription('/move_base_node/global_costmap/cycle_times_G', CycleTimesG)    
-#    mb.addSubscription('/move_base_node/local_costmap/cycle_times_G', CycleTimesG)
 
-def run_batch_scenario(move_base, scenario, n, filename_pattern, clean=False, quiet=False):
-    stats = {'total': n}
-    if not clean:
-        stats['to_run'] = 0
-        for i in range(n):
-            filename = filename_pattern % i 
-            if not os.path.exists(filename):
-                stats['to_run'] +=1
-        if stats['to_run'] == 0:
-            return stats
-    else:
-        stats['to_run'] = n
-    stats['run'] = 0
-
-    g = GazeboHelper(quiet)
-    
-    try:
-        g.spawn_robot_maybe()
-        scenario.spawn(g)
-        goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
-
-        for i in range(n):
-            filename = filename_pattern % i 
-            if os.path.exists(filename) and not clean:
-                continue
-
-            rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, n))
-           
-            try:
-                scenario.reset(g)
-
-                move_base.start()
-                mb = MoveBaseClient()
-                load_subscriptions(mb)
-
-                t = rospy.Time.now()
-                data = mb.goto(goal)
-                bag(filename, scenario.get_endpoints(t) + data)
-                stats['run'] += 1
-
-            finally:
-                move_base.shutdown()
-    except rospy.service.ServiceException, e:
-        rospy.logerr("SERVICE EXCEPTION")
-    finally:
-        scenario.unspawn(g)
-    return stats
