@@ -14,11 +14,7 @@ import socket
 
 basedir = '/home/dlu/Desktop/path_data'
 
-def get_status_message(stats):
-    collected = collections.defaultdict(int)
-    for stat in stats:
-        for k, v in stat.iteritems():
-            collected[k] += v
+def get_status_message(collected):
     host = socket.gethostname()
     ready = collected['total']-collected['to_run']+collected['run']
     return "Ran %d/%d tests (%d/%d) on %s"%(collected['run'], collected['to_run'], ready, collected['total'], host)
@@ -29,39 +25,40 @@ if __name__=='__main__':
     list_of_args, should_text = parse_args()
     stats = collections.defaultdict(int)
 
+    # Count Total Tests
     for args in list_of_args:
         parameterization = Parameterization(args.algorithm, args.scenario, args.variables, args.constants, basedir)
         stats['total'] += args.n * len(parameterization.parameterizations)
-
-        mkdir_p( parameterization.get_folder() )
-
-        move_base = MoveBaseInstance(name=parameterization.node_name, quiet=args.quiet)
-        
         for p in parameterization.parameterizations:
-            parameterization.set_params(p)
-            scenario = parameterization.scenario
-            if len(parameterization.parameterizations)>1:
-                rospy.loginfo( parameterization.to_string(p) )
-
-            """if not args.clean:
-                for i in range(n):
-                    filename = filename_pattern % i 
-                    if not os.path.exists(filename):
-                        stats['to_run'] +=1
-                if stats['to_run'] == 0:
-                    return stats
+            if args.clean:
+                stats['to_run'] += args.n
             else:
-                stats['to_run'] = n
-            stats['run'] = 0"""
-
-            g = GazeboHelper(args.quiet)
-            
-            try:
-                g.spawn_robot_maybe()
-                scenario.spawn(g)
-                goal = (scenario.goal.x, scenario.goal.y, scenario.goal.theta)
-
                 for i in range(args.n):
+                    fn = parameterization.get_full_filename(p, i)
+                    if not os.path.exists(fn):
+                        stats['to_run'] += 1
+
+    print "Attempting to run %d/%d tests"%(stats['to_run'], stats['total'])
+
+    # Run the tests
+    for args in list_of_args:
+        parameterization = Parameterization(args.algorithm, args.scenario, args.variables, args.constants, basedir)
+        mkdir_p( parameterization.get_folder() )
+        move_base = MoveBaseInstance(name=parameterization.node_name, quiet=args.quiet)
+
+        for i in range(args.n):        
+            for p in parameterization.parameterizations:
+                parameterization.set_params(p)
+                scenario = parameterization.scenario
+                if len(parameterization.parameterizations)>1:
+                    rospy.loginfo( parameterization.to_string(p) )
+
+                g = GazeboHelper(args.quiet)
+                
+                try:
+                    g.spawn_robot_maybe()
+                    scenario.spawn(g)
+
                     filename = parameterization.get_full_filename(p, i)
                     if os.path.exists(filename) and not args.clean:
                         continue
@@ -76,16 +73,16 @@ if __name__=='__main__':
                         mb.load_subscriptions()
 
                         t = rospy.Time.now()
-                        data = mb.goto(goal)
+                        data = mb.goto(scenario.get_goal_triple())
                         bag(filename, scenario.get_endpoints(t) + data)
                         stats['run'] += 1
 
                     finally:
                         move_base.shutdown()
-            except rospy.service.ServiceException, e:
-                rospy.logerr("SERVICE EXCEPTION")
-            finally:
-                scenario.unspawn(g)
+                except rospy.service.ServiceException, e:
+                    rospy.logerr("SERVICE EXCEPTION")
+                finally:
+                    scenario.unspawn(g)
 
     s = get_status_message(stats)
     if should_text:
