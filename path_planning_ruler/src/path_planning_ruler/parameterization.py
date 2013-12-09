@@ -95,7 +95,6 @@ def param_keys(array):
     if all_unique(last_words):
         return last_words
 
-    print bits
     i=2
     while is_valid(i, bits):
         b = [a[-i] for a in bits]
