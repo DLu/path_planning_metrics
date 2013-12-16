@@ -114,9 +114,28 @@ class PathStats:
         pnames = fields[1:]
         filename = filename[:-4]
         values = filename.split('-')
+
+        self.params = {'scenario': values[0], 'trial': values[-1]}
+
+        if fields[0]=='core':
+            self.params['algorithm'] = values[1]
+            return
+        self.params['algorithm'] = fields[0]
+
+        if len(values)-1 > len(fields):
+            flag = False
+            nvals = []
+            for v in values:
+                if len(v)==0:
+                    flag = True
+                elif flag:
+                    nvals.append("-%s"%v)
+                else:
+                    nvals.append(v)
+            values = nvals
+
         pvals = map(eval, values[1:-1])
-        self.params = dict(zip(pnames, pvals))
-        self.params.update({'algorithm': fields[0], 'scenario': values[0], 'trial': values[-1]})
+        self.params.update(dict(zip(pnames, pvals)))
 
     def get_params(self):
         return self.params
