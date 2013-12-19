@@ -142,6 +142,8 @@ class Parameterization:
         self.algorithm = config['algorithm']
         self.fixed_params['/nav_experiments/algorithm'] = config['algorithm']
         self.fixed_params['/nav_experiments/topics'] = config['topics']
+        if 'global_planner' in config:
+            self.fixed_params['%s/base_global_planner'%(node_ns)] = config['global_planner']
 
         self.set_local_planner(config['local_planner'], node_ns)
 
@@ -255,7 +257,7 @@ class Parameterization:
 
     def get_filename(self, m, i):
         if len(self.key_params)==0:
-            return '%s-%s-%03d.bag'%(scenario, self.algorithm, i)
+            return '%s-%s-%03d.bag'%(self.scenario.key, self.algorithm, i)
 
         s = self.scenario.key
         for key in sorted( self.key_params ):
