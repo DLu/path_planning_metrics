@@ -8,6 +8,7 @@ from geometry_msgs.msg import Pose2D, Twist, PoseStamped, Point32, Polygon
 from nav_msgs.msg import Path, OccupancyGrid
 from map_msgs.msg import OccupancyGridUpdate
 from path_planning_simulation import *
+from sensor_msgs.msg import PointCloud2
 from gazebo_msgs.msg import ModelStates
 from std_srvs.srv import Empty
 import people_msgs.msg
@@ -173,14 +174,16 @@ class MoveBaseClient:
         for topic in topics:
             if 'plan' in topic:
                 self.addSubscription(topic, Path)
-            elif 'command' in topic:
+            elif 'command' in topic or 'cmd_vel' in topic:
                 self.addSubscription(topic, Twist)
             elif 'costmap_updates' in topic:
                 self.addSubscription(topic, OccupancyGridUpdate)
             elif 'costmap/costmap' in topic:
                 self.addSubscription(topic, OccupancyGrid)
+            elif 'cloud' in topic:
+                self.addSubscription(topic, PointCloud2)
             else:
-                rospy.logerror("unknown type for", topic)
+                rospy.logerr("unknown type for %s"%topic)
         self.addSubscription('/collisions', std_msgs.msg.String)
         self.addSubscription('/simulation_state', ModelStates)
         self.addSubscription('/move_base_node/global_costmap/update_time', std_msgs.msg.Float32)
