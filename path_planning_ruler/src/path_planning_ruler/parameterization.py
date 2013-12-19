@@ -282,7 +282,14 @@ class Parameterization:
         
     def load_critics(self, critics, ns):
         ns = '%s/DWAPlannerROS/critics'%ns
-        self.fixed_params[ns] = critics            
+        self.fixed_params[ns] = []
+        for critic in critics:
+            if '::' in critic:
+                i = critic.index('::')+2
+                name = critic[i:]
+                self.fixed_params[ns].append({'name': name, 'type': critic})
+            else:
+                self.fixed_params[ns].append(critic)
 
     def load_layers(self, layers, is_global, ns):
         ns = '%s/%s_costmap'%(ns, 'global' if is_global else 'local')
