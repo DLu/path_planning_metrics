@@ -15,7 +15,7 @@ def get_stats(bags, headers, grouping=None, only_completed=False, tabs=False):
         else:
             key = filename
 
-        stats = path.stats()
+        stats = path.full_stats()
         if only_completed and stats['completed'] < 1.0:
             continue
 
