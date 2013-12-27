@@ -37,7 +37,13 @@ if __name__=='__main__':
                     fn = parameterization.get_full_filename(p, i)
                     if not os.path.exists(fn):
                         stats['to_run'] += 1
+            if args.print_only:
+                rospy.loginfo( parameterization.to_string(p) )
 
+    if args.print_only:
+        print "Need to run %d/%d tests"%(stats['to_run'], stats['total'])
+        exit(0)
+        
     print "Attempting to run %d/%d tests"%(stats['to_run'], stats['total'])
 
     # Run the tests

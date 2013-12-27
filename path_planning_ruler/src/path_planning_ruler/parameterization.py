@@ -82,28 +82,36 @@ def all_unique(s):
     return len(s)==len(set(s))
 
 def param_keys(array):
-    bits = []
-    if '/' in array[0]:
-        for s in array:
-            a = s.split('/')[1:]
-            bits.append(a)
-    else:
-        bits = array
-
-    last_words = [a[-1] for a in bits]
-
-    if all_unique(last_words):
-        return last_words
-
-    i=2
-    while is_valid(i, bits):
-        b = [a[-i] for a in bits]
-        if not all_unique(b):
-            i+=1
+    try:
+        bits = []
+        if '/' in array[0]:
+            for s in array:
+                a = s.split('/')
+                if len(a)>1:
+                    bits.append(a[1:])
+                else:
+                    bits.append(a)
         else:
-            return ['%s_%s'%(a[-i], a[-1]) for a in bits]
+            bits = array
 
-    return ['_'.join(a) for a in bits]
+        last_words = [a[-1] for a in bits]
+
+        if all_unique(last_words):
+            return last_words
+
+        i=2
+        while is_valid(i, bits):
+            b = [a[-i] for a in bits]
+            if not all_unique(b):
+                i+=1
+            else:
+                return ['%s_%s'%(a[-i], a[-1]) for a in bits]
+
+        return ['_'.join(a) for a in bits]
+    except Exception, e:
+        rospy.logerr("Trouble getting param keys")
+        print array
+        raise e
 
 
 class Parameterization:

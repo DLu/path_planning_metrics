@@ -11,6 +11,7 @@ def main_parser():
     parser.add_argument('--clean', action='store_true')
     parser.add_argument('-q', '--quiet', action='store_true')
     parser.add_argument('-t', '--text', action='store_true')
+    parser.add_argument('-p', '--print_only', action='store_true')
     return parser
 
 def batch_parser():
