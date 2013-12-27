@@ -154,6 +154,9 @@ class Parameterization:
             self.fixed_params['%s/base_global_planner'%(node_ns)] = config['global_planner']
 
         self.set_local_planner(config['local_planner'], node_ns)
+        
+        if 'critics' in config:
+            self.load_critics( config['critics'], node_ns)
 
         if 'fuerte' in config['algorithm']:
             self.load_config(OLD_CONFIGURATION, ns=node_ns)
@@ -284,6 +287,17 @@ class Parameterization:
         for k in self.key_params:
             s.append( '%s:%s'%(k, str(p[k])))
         return ' '.join(s)
+        
+    def load_critics(self, critics, ns):
+        ns = '%s/DWAPlannerROS/critics'%ns
+        self.fixed_params[ns] = []
+        for critic in critics:
+            if '::' in critic:
+                i = critic.index('::')+2
+                name = critic[i:]
+                self.fixed_params[ns].append({'name': name, 'type': critic})
+            else:
+                self.fixed_params[ns].append(critic)
 
     def load_layers(self, layers, is_global, ns):
         ns = '%s/%s_costmap'%(ns, 'global' if is_global else 'local')
