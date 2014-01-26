@@ -161,6 +161,12 @@ class PathStats:
         yaml.dump( self.results, open(self.resultsfile, 'w'))
         return values
 
+    def full_stats(self):
+        m = {}
+        m.update(self.stats())
+        m.update(self.params)
+        return m
+
     def get_distance_to_goal(self, index=-1):
         return dist(self.goal_pose, self.poses[index])        
 

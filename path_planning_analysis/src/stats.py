@@ -24,14 +24,23 @@ if __name__=='__main__':
 
     full_path = os.path.abspath(bags[0])
     simple = '/core' in full_path
+    if not simple and '--summary' in sys.argv:
+        j = full_path.split('/')[-2].split('-')[1:]
+        headers = j + headers
+        params = True
+    else:
+        params = False
 
     group_data = get_stats(bags, headers, grouping, '--completed' in sys.argv, tabs=not simple)
 
     data = rotate_stats(group_data, headers)
-    
+
     pdata = []
     for key in sorted(data):
-        row = [key]
+        if params:
+            row = []
+        else:
+            row = [key]
         stats = data[key]
         
         if grouping is not None:
@@ -46,6 +55,9 @@ if __name__=='__main__':
         headers = [''] + headers
     elif simple:
         headers = ['algorithm', 'count'] + headers
+    elif params:
+        headers = ['count'] + headers
     else:
         headers = full_path.split('/')[-2].split('-')[1:] + ['count'] + headers
+
     print_table([headers] + pdata, False, precision)
