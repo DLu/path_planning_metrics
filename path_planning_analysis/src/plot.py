@@ -42,11 +42,16 @@ if __name__=='__main__':
             tipo = 'stepfilled'
         else:
             tipo = 'step'
-        pylab.hist(data, 50, normed=1, histtype=tipo, label=algorithms)
+        pylab.hist(data, 5, normed=1, histtype=tipo, label=map(str, algorithms))
         pylab.legend()
         pylab.xlabel(header)
         pylab.xlabel('Freq')
-
+    elif '--avg' in sys.argv:
+        yys = []
+        for a in algorithms:
+            f = ys[a]
+            yys.append( sum(f)/len(f) )
+        pylab.plot(algorithms, yys, 'o-')
     else:        
         plt.boxplot(data)
         pylab.ylabel(header)
