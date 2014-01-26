@@ -8,6 +8,8 @@ from path_planning_analysis.basic_stats import *
 from path_planning_analysis.obstacle_stats import *
 from path_planning_analysis.social_stats import *
 from path_planning_analysis.time_stats import *
+from path_planning_analysis.path_analyze import *
+from path_planning_analysis.array_stats import *
 import os, errno
 import sys
 
@@ -29,18 +31,25 @@ def md5_for_file(fn, block_size=2**20):
         md5.update(data)
     return md5.digest()
 
-def stat_functions():
+def gather_functions(key):
     fnes = []
     for name in globals().keys():
         value = globals()[name]
-        if value.__doc__ and 'METRIC' in value.__doc__:
+        if value.__doc__ and key in value.__doc__:
             fnes.append(value)
     return fnes
+
+def stat_functions():
+    return gather_functions('METRIC')
+    
+def array_functions():
+    return gather_functions('ARRAY_MET')
+
 
 class PathStats:
     def __init__(self, filename):
         self.filename = filename
-        self.calculate_params()
+        self.features = path_analyze(filename)
         folder, basefile = os.path.split( os.path.abspath(filename) )
         mkdir_p( folder + '/.cache/' )
         mkdir_p( folder + '/.results/' )
@@ -95,50 +104,19 @@ class PathStats:
             setattr(self, k, v)
             if type(v)==list and len(v)>0 and type(v[0])==float:
                 self.data_fields.append(k)
+                
+        for fne in array_functions():
+            k = fne.__name__
+            setattr(self, k, fne(self))
+            self.data_fields.append(k)
+            
         self.path_ready = True
 
     def get_scenario_name(self):
-        return self.params['scenario']
+        return self.features['scenario']
 
     def get_algorithm(self):
-        return self.params['algorithm']
-
-    def get_unique(self, tabs=True):
-        c = '\t' if tabs else '/'
-        return c.join(self.filename.split('-')[1:-1])
-
-    def calculate_params(self):
-        full = os.path.abspath(self.filename)
-        folder, filename = full.split('/')[-2:]
-        fields = folder.split('-')
-        pnames = fields[1:]
-        filename = filename[:-4]
-        values = filename.split('-')
-
-        self.params = {'scenario': values[0], 'trial': values[-1]}
-
-        if fields[0]=='core':
-            self.params['algorithm'] = values[1]
-            return
-        self.params['algorithm'] = fields[0]
-
-        if len(values)-1 > len(fields):
-            flag = False
-            nvals = []
-            for v in values:
-                if len(v)==0:
-                    flag = True
-                elif flag:
-                    nvals.append("-%s"%v)
-                else:
-                    nvals.append(v)
-            values = nvals
-
-        pvals = map(eval, values[1:-1])
-        self.params.update(dict(zip(pnames, pvals)))
-
-    def get_params(self):
-        return self.params
+        return self.features['algorithm']
 
     def stats(self):
         fnes = stat_functions()
@@ -164,7 +142,7 @@ class PathStats:
     def full_stats(self):
         m = {}
         m.update(self.stats())
-        m.update(self.params)
+        m.update(self.features)
         return m
 
     def get_distance_to_goal(self, index=-1):

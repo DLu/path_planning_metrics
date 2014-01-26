@@ -5,6 +5,7 @@ import sys
 import os.path
 from path_planning_analysis.path_stats import *
 from path_planning_analysis.interactive import *
+from path_planning_analysis.classes import *
 import pylab
 import collections
 import numpy as np
@@ -31,18 +32,29 @@ if __name__=='__main__':
 
     headers, bags = analysis_argparse(one=True)
     header = headers[0]
+    
+    paths = [PathStats(filename) for filename in bags]
+    constants, parameters = get_parameters([p.features for p in paths])
+    
+    if len(parameters)==2:        
+        if '--reverse' in sys.argv:
+            variable1 = parameters[0]
+            variable2 = parameters[1]
+        else:
+            variable1 = parameters[1]
+            variable2 = parameters[0]
+            
+    else:
+        variable1 = select(parameters, True)[0]
+        parameters.remove(variable1)
+        variable2 = select(parameters, True)[0]
+   
     vs = []
     
-    for filename in bags:
-        path = PathStats(filename)  
-        fullpath = os.path.abspath(filename)
-        parts = fullpath.split('/')
-        algorithm, variable1, variable2 = parts[-2].split('-')
-        scenario, value1, value2, trial = parts[-1].split('-')
-        if '--reverse' in sys.argv:
-            t = variable1, variable2, value1, value2
-            variable2, variable1, value2, value1 = t
-
+    for path in paths:
+        value1 = path.features[variable1]
+        value2 = path.features[variable2]
+        
         row = []
 
         stats = path.stats()

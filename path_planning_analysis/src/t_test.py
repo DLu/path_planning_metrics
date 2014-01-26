@@ -27,14 +27,10 @@ def t_test(a,b,one_sided=True):
 
 if __name__=='__main__':
     headers, bags = analysis_argparse()
+    minimum = 5 if '-m' in sys.argv else 0
     
-    group_data = get_stats(bags, headers, 'algorithm', only_completed=True, tabs=False)
-
-    if '-m' in sys.argv:
-        data = rotate_stats(group_data, headers, filter_minimum=5)
-    else:
-        data = rotate_stats(group_data, headers)
-    
+    new_headers, data, constants = collect_stats(bags, headers, True, minimum)
+  
     pdata = []
 
     algorithms = sorted(data.keys())
@@ -43,9 +39,9 @@ if __name__=='__main__':
         print header + "=" * 50
         seen = set()
         sdata = []
-        sdata.append( [''] + algorithms )
+        sdata.append( [''] + [data[a]['unique'] for a in algorithms] )
         for a1 in algorithms:
-            row = [a1]
+            row = [data[a1]['unique']]
             for a2 in algorithms:
                 if a1>=a2:
                     row.append('')

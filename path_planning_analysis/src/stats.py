@@ -16,48 +16,25 @@ if __name__=='__main__':
         precision = int(sys.argv[-1][2:])
     
     if '--summary' in sys.argv:
-        grouping = 'algorithm'
-    elif '--scenario' in sys.argv:
-        grouping = 'scenario'
+        merge = True
     else:
-        grouping = None
+        merge = False
 
-    full_path = os.path.abspath(bags[0])
-    simple = '/core' in full_path
-    if not simple and '--summary' in sys.argv:
-        j = full_path.split('/')[-2].split('-')[1:]
-        headers = j + headers
-        params = True
-    else:
-        params = False
-
-    group_data = get_stats(bags, headers, grouping, '--completed' in sys.argv, tabs=not simple)
-
-    data = rotate_stats(group_data, headers)
+    new_headers, data, constants = collect_stats(bags, headers, merge)
 
     pdata = []
     for key in sorted(data):
-        if params:
-            row = []
-        else:
-            row = [key]
+        row = []
         stats = data[key]
         
-        if grouping is not None:
-            row.append( stats['count'] ) 
-
-        for header in headers:
-            arr = stats[header]
-            row.append( average(arr) )
+        for header in new_headers:
+            v = stats[header]
+            if type(v)==list:
+                row.append( average(v) )
+            else:
+                row.append( v )
         pdata.append(row)
 
-    if grouping is None:
-        headers = [''] + headers
-    elif simple:
-        headers = ['algorithm', 'count'] + headers
-    elif params:
-        headers = ['count'] + headers
-    else:
-        headers = full_path.split('/')[-2].split('-')[1:] + ['count'] + headers
-
-    print_table([headers] + pdata, False, precision)
+    print_table([new_headers] + pdata, False, precision)
+    if len(constants)>0:
+        print '(%s)'%map_string(constants)

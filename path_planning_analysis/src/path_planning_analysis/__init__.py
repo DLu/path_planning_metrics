@@ -9,6 +9,8 @@ from math import sin, cos, sqrt, pi, atan2
 from path_planning_ruler.scenario import Scenario
 from path_planning_analysis.object_field import ObjectField
 from geometry_msgs.msg import Polygon as RosPolygon, Point32
+from path_planning_analysis.path_analyze import *
+
 PIx2 = pi * 2
 
 def smooth(x, window=2):
@@ -55,6 +57,7 @@ class RobotPath:
         self.local_update_details = []
         self.other = collections.defaultdict(list)
         self.params = None
+        self.features = path_analyze(self.filename)
 
         try:
             bag = rosbag.Bag(filename, 'r')
@@ -241,10 +244,10 @@ class RobotPath:
         return sums
 
     def get_scenario_name(self):
-        return self.filename.split('-')[0]
+        return self.features['scenario']
 
     def get_algorithm(self):
-        return self.filename.split('-')[1]
+        return self.features['algorithm']
 
     def get_data(self):
         vels = self.get_velocity()
