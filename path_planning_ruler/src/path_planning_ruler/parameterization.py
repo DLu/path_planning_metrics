@@ -262,15 +262,17 @@ class Parameterization:
             rospy.set_param(k, v)
 
     def get_folder(self):
+        base = '%s/%s'%(self.basedir, self.scenario.key)
         if len(self.key_params)==0:
-            return '%s/core'%self.basedir
-        return '%s/%s-%s'%(self.basedir, self.algorithm, '-'.join( param_keys( sorted( self.key_params) ) ))
+            return base
+        keys = param_keys( sorted( self.key_params) )
+        return '%s/%s'%(base, '-'.join(keys) )
 
     def get_filename(self, m, i):
         if len(self.key_params)==0:
-            return '%s-%s-%03d.bag'%(self.scenario.key, self.algorithm, i)
+            return '%s-%03d.bag'%(self.algorithm, i)
 
-        s = self.scenario.key
+        s = self.algorithm
         for key in sorted( self.key_params ):
             s += '-%s'% str(m[key])
         s += '-%03d.bag'%i
