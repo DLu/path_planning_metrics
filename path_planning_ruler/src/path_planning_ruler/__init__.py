@@ -36,7 +36,7 @@ def get_time_and_pose(tf, f1, f2):
 class MoveBaseClient:
     global_tf = None
 
-    def __init__(self, record_rate=5):
+    def __init__(self, record_rate=5, timeout=90):
         if MoveBaseClient.global_tf is None:
             MoveBaseClient.global_tf = tf.TransformListener()
         self.tf = MoveBaseClient.global_tf
@@ -44,7 +44,7 @@ class MoveBaseClient:
         self.record_rate = record_rate
         self.base_frame = '/map'
         self.target_frame = '/base_footprint'
-        self.timeout = rospy.Duration( rospy.get_param('/nav_experiments/timeout', 90) )
+        self.timeout = rospy.Duration( timeout )
 
         self.recording = False
         self.other_data = []

@@ -78,6 +78,9 @@ class Scenario:
 
     def get_goal_triple(self):
         return (self.goal.x, self.goal.y, self.goal.theta)
+        
+    def get_timeout(self):
+        return self.scenario.get('timeout', 90)
 
     def get_objects(self):
         return self.objects

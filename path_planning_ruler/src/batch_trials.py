@@ -75,7 +75,7 @@ if __name__=='__main__':
                         scenario.reset(g)
 
                         move_base.start()
-                        mb = MoveBaseClient()
+                        mb = MoveBaseClient(timeout=scenario.get_timeout())
                         mb.load_subscriptions()
 
                         t = rospy.Time.now()

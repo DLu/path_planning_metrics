@@ -7,4 +7,4 @@ locations:
     - [-3.2, -18, 0] # room 1
     - [.2, -18, 0]   # room 2
     - [8.2, -18, 0]  # room 3
-
+timeout: 600
