@@ -55,6 +55,13 @@ class Scenario:
     
     def parameterize(self, params={}):
         scenario = self.scenario
+        
+        if 'locations' in scenario:
+            if 'start' not in scenario and 'start_i' in params:
+                scenario['start'] = scenario['locations'][params['start_i']]
+            if 'goal' not in scenario and 'goal_i' in params:
+                scenario['goal'] = scenario['locations'][params['goal_i']]
+        
         self.start = get_pose2d(scenario, 'start', params)
         self.goal = get_pose2d(scenario, 'goal', params)
         self.objects = {}
