@@ -235,7 +235,7 @@ class Parameterization:
             self.load_config(DWA_PARAMS, ns='%s/DWAPlannerROS'% node_ns)
         elif 'TrajectoryPlanner' in name:
             self.load_config(TPR_PARAMS, ns='%s/TrajectoryPlannerROS' % node_ns)
-            rospy.set_param('/%s/move_slow_and_clear/planner_namespace'%self.name, 'TrajectoryPlannerROS')
+            rospy.set_param('/%s/move_slow_and_clear/planner_namespace'%self.node_name, 'TrajectoryPlannerROS')
 
     def set_params(self, m):
         for ns in self.namespaces:
