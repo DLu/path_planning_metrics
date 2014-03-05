@@ -110,4 +110,19 @@ def rotational_velocity_derivatives(path):
     results['average_rotational_jerk'] = average(j)
     
     return results
+    
+def mendoza(path):
+    """METRIC"""
+    i = path.get_num_poses()-1
+    tn = path.t[i]
+    while i >= 0:
+        d = path.get_distance_to_goal(i)
+        if d < .2:
+            tn = path.t[i]
+        if d > .4:
+            break
+        i -= 1
+    t = path.t[i]
+    time = (tn-t).to_sec()
+    return max(0.0, time)
 
