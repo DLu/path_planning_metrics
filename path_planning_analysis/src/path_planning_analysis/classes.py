@@ -2,8 +2,13 @@ import collections
 
 from path_planning_analysis.path_stats import *
 
-def collect_stats(bags, headers, merge_trials=False, min_trials=0, remove_singular_headers=True):
-    groups, metadata = get_raw_stats(bags, headers, merge_trials)
+def collect_stats(bags, headers, merge_trials=False, min_trials=0, merge_fields=None):
+    if merge_fields and merge_trials:
+        merge_fields.append('trial')
+    elif merge_trials:
+        merge_fields = ['trial']
+        
+    groups, metadata = get_raw_stats(bags, headers, merge_fields)
     summed = rotate_stats(groups, headers, min_trials)
     
     constants = {}
@@ -42,7 +47,7 @@ def get_parameters(array_of_feature_sets, filter_trials=True):
     return constants, keys
     
 
-def get_raw_stats(bags, headers, merge_trials=False):
+def get_raw_stats(bags, headers, merge_fields=None):
     data = collections.defaultdict(list)
     metadata = {}
     
@@ -50,9 +55,11 @@ def get_raw_stats(bags, headers, merge_trials=False):
         path = PathStats(filename)  
         
         row = []
-        if merge_trials:
+        if merge_fields is not None:
             features = path.features.copy()
-            del features['trial']
+            for field in merge_fields:
+                if field in features:
+                    del features[field] 
             key = str(features)
             metadata[key] = features            
         else:
