@@ -13,7 +13,7 @@ def path_analyze(filename):
     if len(parts)==3:
         fields = parts[1].split('-')
         values = fparts[1:-1]
-        if len(values)-1 > len(fields):
+        if len(values) != len(fields):
             flag = False
             nvals = []
             for v in values:
