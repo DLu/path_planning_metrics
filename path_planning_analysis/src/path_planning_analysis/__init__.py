@@ -31,9 +31,14 @@ def smooth(x, window=2):
 
     return result
 
-def plot_path(ax, path, label=None):
-    x = [p.pose.position.x for p in path.poses]
-    y = [p.pose.position.y for p in path.poses]
+# TODO Make color schemes
+def plot_path(ax, path, label=None, limits=None):
+    x = []
+    y = []
+    for p in path.poses:
+        if valid_coordinates(p.pose.position, limits):
+            x.append( p.pose.position.x )
+            y.append( p.pose.position.y )
     ax.plot(x,y, label=label)
 
 def to_triple(pose):
@@ -44,6 +49,12 @@ def process_cycle_times(msg):
     for event in msg.events:
         x.append( (event.name, event.time) )
     return x
+    
+def valid_coordinates(pose, limits):
+    if limits is None:
+        return True
+    return pose.x <= limits['maxx'] and pose.x >= limits['minx'] and \
+        pose.y <= limits['maxy'] and pose.y >= limits['miny']
 
 class RobotPath:
     def __init__(self, filename):
@@ -169,18 +180,20 @@ class RobotPath:
         self.plot(ax)
         pylab.show()
         
-    def plot_one(self, ax, label=None):
+    def plot_one(self, ax, limits=None, label=None):
         x =[]
         y =[]
         for t, pose in self.poses:
-            x.append(pose.x)
-            y.append(pose.y)
+            if valid_coordinates(pose, limits):
+                x.append(pose.x)
+                y.append(pose.y)
         ax.plot(x,y,label=label)
         for t, pose in self.poses:
-            theta = pose.theta #+ pi
-            dx = cos(theta) / 500
-            dy = sin(theta) / 500
-            ax.arrow(pose.x, pose.y, dx, dy, head_width=.025, head_length=.05)    
+            if valid_coordinates(pose, limits):
+                theta = pose.theta #+ pi
+                dx = cos(theta) / 500
+                dy = sin(theta) / 500
+                ax.arrow(pose.x, pose.y, dx, dy, head_width=.025, head_length=.05)    
 
     def plot_progress(self):
         ax = pylab.axes()
@@ -200,9 +213,9 @@ class RobotPath:
         ax.plot(ts,z)
         pylab.show()
 
-    def plot_global(self, ax, label=None):
+    def plot_global(self, ax, label=None, limits=None):
         for t, path in self.get_global_plans():
-            plot_path(ax, path, label)
+            plot_path(ax, path, label, limits=limits)
 
     def plot_local(self, ax):
         for t, path in self.other['/move_base_node/DWAPlannerROS/local_plan']:
