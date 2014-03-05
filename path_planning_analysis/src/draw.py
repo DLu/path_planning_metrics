@@ -13,8 +13,11 @@ if __name__=='__main__':
         if filename[0]=='-':
             continue
         path = RobotPath(filename)  
-        path.plot_one(ax)
+        path.plot_one(ax, label=filename)
         if g_path:
-            path.plot_global(ax)
+            path.plot_global(ax, label=filename)
+            
+    if '-l' in sys.argv:
+        pylab.legend()
     pylab.show()
 

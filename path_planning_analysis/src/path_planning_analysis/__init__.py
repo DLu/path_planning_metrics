@@ -31,10 +31,10 @@ def smooth(x, window=2):
 
     return result
 
-def plot_path(ax, path):
+def plot_path(ax, path, label=None):
     x = [p.pose.position.x for p in path.poses]
     y = [p.pose.position.y for p in path.poses]
-    ax.plot(x,y)
+    ax.plot(x,y, label=label)
 
 def to_triple(pose):
     return [pose.x, pose.y, pose.theta]
@@ -169,13 +169,13 @@ class RobotPath:
         self.plot(ax)
         pylab.show()
         
-    def plot_one(self, ax):
+    def plot_one(self, ax, label=None):
         x =[]
         y =[]
         for t, pose in self.poses:
             x.append(pose.x)
             y.append(pose.y)
-        ax.plot(x,y)
+        ax.plot(x,y,label=label)
         for t, pose in self.poses:
             theta = pose.theta #+ pi
             dx = cos(theta) / 500
@@ -200,13 +200,17 @@ class RobotPath:
         ax.plot(ts,z)
         pylab.show()
 
-    def plot_global(self, ax):
-        for t, path in self.other['/move_base_node/NavfnROS/plan']:
-            plot_path(ax, path)
+    def plot_global(self, ax, label=None):
+        for t, path in self.get_global_plans():
+            plot_path(ax, path, label)
 
     def plot_local(self, ax):
         for t, path in self.other['/move_base_node/DWAPlannerROS/local_plan']:
             plot_path(ax, path)
+            
+    def get_global_plans(self):
+        return self.other['/move_base_node/NavfnROS/plan'] + \
+                self.other['/move_base_node/GlobalPlanner/plan']
 
     def collisions(self):
         return 1.0 if len(self.other['/collisions'])>0 else 0.0
