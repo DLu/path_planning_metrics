@@ -29,7 +29,6 @@ def box(name, size=[1,1,1], xyz=[0,0,0], rpy=[0,0,0], is_static=True):
                 </visual>
             </link>
             %(static_string)s
-            %(plugin_string)s
         </model>
     </world>
 </sdf>

@@ -7,6 +7,7 @@ import gazebo_msgs.msg
 from path_planning_analysis.translator import *
 from people_msgs.msg import People, Person
 from tf import Transformer
+from std_srvs.srv import *
 
 def get_position(moves, t):
     for i in range(len(moves)-1):
@@ -20,22 +21,26 @@ def get_position(moves, t):
             pct = (t - t1)/(t2 - t1)
             p = [a+pct*(b-a) for a,b in zip(p1,p2)]
             return p
-    if t > t2 + 5:
+    if t > t2 + 1:
         return None
     return moves[-1]['pos']
     
 class Animator:
     def __init__(self):
         rospy.init_node('animator')
-        self.g = GazeboHelper()
-        rospy.sleep(1)
-        self.restart()
-
-    def restart(self):
-        self.objects = rospy.get_param('/nav_experiments/scenario/objects')
-        self.name_map = rospy.get_param('/nav_experiments/spawn_names')
+        self.g = GazeboHelper(True)
+        self.s = rospy.Service('/animator/reset', Empty, self.restart)
+        self.objects = {}
+        self.name_map = {}
         self.t = rospy.Time.now()
         self.pause = rospy.Duration(0)
+
+    def restart(self, req):
+        self.objects = rospy.get_param('/nav_experiments/scenario/objects', {})
+        self.name_map = rospy.get_param('/nav_experiments/spawn_names', {})
+        self.t = rospy.Time.now()
+        self.pause = rospy.Duration(0)
+        return EmptyResponse()
 
     def spin(self):
         r = rospy.Rate(10)

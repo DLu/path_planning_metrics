@@ -79,9 +79,16 @@ class GazeboHelper:
         state.pose = pose
         if twist is not None:
             state.twist = twist
-        response = self.state_proxy(state)
+        success = False
+        try:
+            response = self.state_proxy(state)
+            success = response.success
+            msg = response.status_message
+        except rospy.ServiceException, e:
+            success = False
+            msg = str(e)
         if not self.quiet:
-            rospy.loginfo("SetState: %s | %s", "Success" if response.success else "Failure", response.status_message)
+            rospy.loginfo("SetState: %s | %s", "Success" if success else "Failure", msg)
             
     def spawn_robot(self, name):
         description = rospy.get_param('/robot_description')

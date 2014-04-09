@@ -1,6 +1,7 @@
 import roslib; roslib.load_manifest('path_planning_ruler')
 from path_planning_simulation import *
 from path_planning_simulation.models import *
+from std_srvs.srv import *
 import rospy
 import yaml
 import os.path
@@ -42,6 +43,8 @@ class GazeboObject:
 
 class Scenario:
     def __init__(self, filename=None, the_dict=None):
+        rospy.wait_for_service('/animator/reset')
+        self.resetter = rospy.ServiceProxy('/animator/reset', Empty)
         if filename is not None:
             self.key = os.path.splitext( os.path.basename(filename) )[0]
             self.scenario = yaml.load( open(filename) )
@@ -92,6 +95,7 @@ class Scenario:
             xml = obj.get_xml()
             spawn_name = obj.get_spawn_name()
             sn_map[obj.name] = spawn_name
+            self.spawn_names.append(spawn_name)
             if not xml:
                 continue
 
@@ -111,8 +115,10 @@ class Scenario:
             gazebo.delete_model(name)
 
     def reset(self, gazebo):
+        rospy.sleep(1.0)
         gazebo.set_state('pr2', pose2d_to_pose(self.start))
         rospy.sleep(1.0)
+        self.resetter()
 
     def get_endpoints(self, t=None):
         if t is None:
