@@ -1,9 +1,8 @@
 
 STATIC = "<static>true</static>"
 
-def box(name, size=[1,1,1], xyz=[0,0,0], rpy=[0,0,0], is_static=True, plugin=None):
+def box(name, size=[1,1,1], xyz=[0,0,0], rpy=[0,0,0], is_static=True):
     static_string = STATIC if is_static else ""
-    plugin_string = "<plugin filename=\"/home/dlu/ros/path_planning_metrics/path_planning_simulation/lib/libanimate_pose.so\" name=\"pose_animation\" />" if plugin else ""
     w,h,d = size
     x,y,z = xyz
     r,p,yaw = rpy
