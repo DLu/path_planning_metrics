@@ -1,20 +1,27 @@
-goal:   [10,0,0]
+vars:
+  L: {min: 2., max: 20., default: 20.}
+  M: {default: 1.0}
+  wallwidth: {default: .1}
+  hallwidth: {default: 11.5}
+  H: {default: 0.5}
+goal:   [L,0,0]
 objects:
     box1:
         type: box
-        size: [.1,1.5,2]
-        xyz: [11,0,1]
+        size: [wallwidth,hallwidth,H]
+        xyz: [L+M,0,H/2]
     box2:
         type: box
-        size: [.1,1.5,2]
-        xyz: [-1,0,1]
+        size: [wallwidth,hallwidth,H]
+        xyz: [-M,0,H/2]
     box3:
         type: box
-        size: [12,.1,2]
-        xyz: [5,0.75,1]
+        size: [L+2,wallwidth,H]
+        xyz: [L/2,hallwidth/2,H/2]
     box4:
         type: box
-        size: [12,.1,2]
-        xyz: [5,-0.75,1]
+        size: [L+2,wallwidth,H]
+        xyz: [L/2,-hallwidth/2,H/2]
+
 
 
