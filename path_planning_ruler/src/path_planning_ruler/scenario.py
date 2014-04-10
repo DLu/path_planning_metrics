@@ -14,7 +14,16 @@ class GazeboObject:
         self.size = get_triple(m, 'size', [1,1,1], params)
         self.xyz = get_triple(m, 'xyz', [0,0,0], params)
         self.rpy = get_triple(m, 'rpy', [0,0,0], params)
-        self.movement = m.get('movement', None)
+        if 'movement' in m:
+            self.movement =[]
+            for frame in m['movement']:
+                f = {}
+                f['pos'] = get_triple(frame, 'pos', [0,0,0], params)
+                f['t'] = eval_s(frame['t'], params)
+                self.movement.append(f)
+            print self.movement
+        else:
+            self.movement = None
         self.is_person = m.get('class', '')=='person'
         self.spawn_name = None
         

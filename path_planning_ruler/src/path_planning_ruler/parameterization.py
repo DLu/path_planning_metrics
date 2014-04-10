@@ -178,7 +178,11 @@ class Parameterization:
         self.scenario = Scenario(filename)
         for name, m in self.scenario.vars.iteritems():
             p = Parameter(name, ns='/nav_experiments/scenario_params')
-            p.set_range(m['default'], m['min'], m['max'])
+            if 'min' in m:
+                p.set_range(m['default'], m['min'], m['max'])
+            else:
+                d = m['default']
+                p.set_range(d,d,d)
             self.available_params[name] = p
 
 
