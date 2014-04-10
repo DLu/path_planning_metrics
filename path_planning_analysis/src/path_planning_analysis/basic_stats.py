@@ -84,6 +84,7 @@ def average_velocity_derivatives(path):
     results['average_acceleration'] = average(a)
     j = derivative(t, a)
     results['average_jerk'] = average(j)
+    results['max_velocity'] = max(path.speeds)
     return results
 
 def rotational_velocity_derivatives(path):
