@@ -34,12 +34,14 @@ class Animator:
         self.name_map = {}
         self.t = rospy.Time.now()
         self.pause = rospy.Duration(0)
+        self.failures = 0
 
     def restart(self, req):
         self.objects = rospy.get_param('/nav_experiments/scenario/objects', {})
         self.name_map = rospy.get_param('/nav_experiments/spawn_names', {})
         self.t = rospy.Time.now()
         self.pause = rospy.Duration(0)
+        self.failures = 0
         return EmptyResponse()
 
     def spin(self):
@@ -47,12 +49,14 @@ class Animator:
         while not rospy.is_shutdown():
             ellapsed = (rospy.Time.now() - self.t - self.pause).to_sec()
             for name, obj in self.objects.iteritems():
-                if 'movement' in obj:
+                if 'movement' in obj and self.failures <= 5:
                     p = get_position(obj['movement'], ellapsed)
                     if p is None:
                         continue
                     pose = get_pose(p[0], p[1], p[2])                   
-                    self.g.set_state( self.name_map[name], pose)
+                    ret = self.g.set_state( self.name_map[name], pose)
+                    if not ret:
+                        self.failures += 1
             r.sleep()
 
 if __name__=='__main__':

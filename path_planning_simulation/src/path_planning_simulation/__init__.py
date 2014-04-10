@@ -96,6 +96,7 @@ class GazeboHelper:
             msg = str(e)
         if not self.quiet:
             rospy.loginfo("SetState: %s | %s", "Success" if success else "Failure", msg)
+        return success
             
     def spawn_robot(self, name):
         description = rospy.get_param('/robot_description')
