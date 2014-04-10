@@ -17,7 +17,11 @@ def eval_s(val, params):
         return val
     for param in params:
         if param in val:
-            val = val.replace(param, str(params[param]))
+            x = str(params[param])
+            if '.' not in x:
+                x = '%s.0'%x
+            
+            val = val.replace(param, x)
     try:                
         return eval(val)
     except NameError, e:
