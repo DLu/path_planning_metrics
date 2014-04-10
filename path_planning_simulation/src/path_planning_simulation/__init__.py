@@ -6,6 +6,7 @@ from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
 from geometry_msgs.msg import Pose2D
 import rosnode
+from math import pi
 
 SET_STATE_NAME = '/gazebo/set_model_state'
 SPAWN_NAME = '/gazebo/spawn_gazebo_model'
@@ -17,7 +18,13 @@ def eval_s(val, params):
         return val
     for param in params:
         if param in val:
-            val = val.replace(param, str(params[param]))
+            x = str(params[param])
+            if '.' not in x:
+                x = '%s.0'%x
+            
+            val = val.replace(param, x)
+    if 'pi' in val:
+        val = val.replace('pi', str(pi))
     try:                
         return eval(val)
     except NameError, e:
@@ -79,9 +86,17 @@ class GazeboHelper:
         state.pose = pose
         if twist is not None:
             state.twist = twist
-        response = self.state_proxy(state)
+        success = False
+        try:
+            response = self.state_proxy(state)
+            success = response.success
+            msg = response.status_message
+        except rospy.ServiceException, e:
+            success = False
+            msg = str(e)
         if not self.quiet:
-            rospy.loginfo("SetState: %s | %s", "Success" if response.success else "Failure", response.status_message)
+            rospy.loginfo("SetState: %s | %s", "Success" if success else "Failure", msg)
+        return success
             
     def spawn_robot(self, name):
         description = rospy.get_param('/robot_description')

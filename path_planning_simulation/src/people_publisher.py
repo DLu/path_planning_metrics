@@ -26,13 +26,16 @@ class PeoplePublisher:
                 continue
 
             p = Person()
-            p.name = name
+            p.name = oname
 
             oname = name[:-10]
             properties = objects[oname]
             if 'movement' not in properties:
-                pose = get_pose_from_scenario(oname, properties)
-            p.position = pose.position
+                p.position.x = properties['xyz'][0]
+                p.position.y = properties['xyz'][1]
+                p.position.z = properties['xyz'][2]
+            else:
+                p.position = pose.position
 
             p.velocity.x  = twist.linear.x
             p.velocity.y  = twist.linear.y

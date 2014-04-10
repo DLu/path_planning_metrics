@@ -178,7 +178,11 @@ class Parameterization:
         self.scenario = Scenario(filename)
         for name, m in self.scenario.vars.iteritems():
             p = Parameter(name, ns='/nav_experiments/scenario_params')
-            p.set_range(m['default'], m['min'], m['max'])
+            if 'min' in m:
+                p.set_range(m['default'], m['min'], m['max'])
+            else:
+                d = m['default']
+                p.set_range(d,d,d)
             self.available_params[name] = p
 
 
@@ -235,7 +239,7 @@ class Parameterization:
             self.load_config(DWA_PARAMS, ns='%s/DWAPlannerROS'% node_ns)
         elif 'TrajectoryPlanner' in name:
             self.load_config(TPR_PARAMS, ns='%s/TrajectoryPlannerROS' % node_ns)
-            rospy.set_param('/%s/move_slow_and_clear/planner_namespace'%self.name, 'TrajectoryPlannerROS')
+            rospy.set_param('/%s/move_slow_and_clear/planner_namespace'%self.node_name, 'TrajectoryPlannerROS')
 
     def set_params(self, m):
         for ns in self.namespaces:

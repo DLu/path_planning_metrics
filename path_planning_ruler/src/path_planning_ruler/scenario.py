@@ -1,6 +1,7 @@
 import roslib; roslib.load_manifest('path_planning_ruler')
 from path_planning_simulation import *
 from path_planning_simulation.models import *
+from std_srvs.srv import *
 import rospy
 import yaml
 import os.path
@@ -13,7 +14,16 @@ class GazeboObject:
         self.size = get_triple(m, 'size', [1,1,1], params)
         self.xyz = get_triple(m, 'xyz', [0,0,0], params)
         self.rpy = get_triple(m, 'rpy', [0,0,0], params)
-        self.movement = m.get('movement', None)
+        if 'movement' in m:
+            self.movement =[]
+            for frame in m['movement']:
+                f = {}
+                f['pos'] = get_triple(frame, 'pos', [0,0,0], params)
+                f['t'] = eval_s(frame['t'], params)
+                self.movement.append(f)
+            print self.movement
+        else:
+            self.movement = None
         self.is_person = m.get('class', '')=='person'
         self.spawn_name = None
         
@@ -35,14 +45,15 @@ class GazeboObject:
     def get_xml(self):
         if self.type=='box':
             return box(self.get_spawn_name(), self.size, 
-                        self.xyz, self.rpy, is_static=True, 
-                        plugin=(self.movement is not None))
+                        self.xyz, self.rpy, is_static=True)
         else:
             rospy.logerror("unknown type %s"%t)
             return None
 
 class Scenario:
     def __init__(self, filename=None, the_dict=None):
+        rospy.wait_for_service('/animator/reset')
+        self.resetter = rospy.ServiceProxy('/animator/reset', Empty)
         if filename is not None:
             self.key = os.path.splitext( os.path.basename(filename) )[0]
             self.scenario = yaml.load( open(filename) )
@@ -87,10 +98,13 @@ class Scenario:
 
     def spawn(self, gazebo ):
         self.spawn_names =[]
+        sn_map = {}
         people_names = []
         for name, obj in self.objects.iteritems():
             xml = obj.get_xml()
             spawn_name = obj.get_spawn_name()
+            sn_map[obj.name] = spawn_name
+            self.spawn_names.append(spawn_name)
             if not xml:
                 continue
 
@@ -99,15 +113,21 @@ class Scenario:
             
             if obj.is_person:
                 people_names.append(spawn_name)
+            if obj.movement:
+                pos = obj.movement[0]['pos']
+                gazebo.set_state(spawn_name, get_pose(pos[0], pos[1], pos[2]))
         rospy.set_param('/nav_experiments/people', people_names)
+        rospy.set_param('/nav_experiments/spawn_names', sn_map)
 
     def unspawn(self, gazebo):
         for name in self.spawn_names:
             gazebo.delete_model(name)
 
     def reset(self, gazebo):
+        rospy.sleep(1.0)
         gazebo.set_state('pr2', pose2d_to_pose(self.start))
         rospy.sleep(1.0)
+        self.resetter()
 
     def get_endpoints(self, t=None):
         if t is None:

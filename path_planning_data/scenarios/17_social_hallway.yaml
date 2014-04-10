@@ -4,6 +4,7 @@ vars:
   wallwidth: {default: .1}
   hallwidth: {default: 1.5}
   H: {default: 2.0}
+  T: {min: 2.0, max: 1000, default: 20.}
 goal:   [L,0,0]
 objects:
     box1:
@@ -22,6 +23,12 @@ objects:
         type: box
         size: [L+2,wallwidth,H]
         xyz: [L/2,-hallwidth/2,H/2]
-
-
+    person:
+        type: box
+        size: [.25, .45, 1.7]
+        xyz: [L, hallwidth/4, 1.7/2]
+        movement:
+            - {pos: [0,0,0], t:  0}
+            - {pos: [-L,0,0], t:  T}
+        
 
