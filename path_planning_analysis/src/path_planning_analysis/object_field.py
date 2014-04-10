@@ -173,7 +173,7 @@ def get_polygon(pose, size, shape_type):
     return p
 
 class ObjectField:
-    def __init__(self, scenario, simulation_states, t0):
+    def __init__(self, scenario, name_map, simulation_states, t0):
         self.static_objects = {}
         self.dynamic_objects = {}
 
@@ -181,7 +181,7 @@ class ObjectField:
             t = obj.type
             size = obj.size
             new_obj = {'type': t, 'size': size, 'person': obj.is_person}
-
+            oname = name_map[name]
             if obj.movement is None:
                 p = get_pose_from_scenario(name, obj)
                 new_obj['pose'] = p
@@ -190,9 +190,9 @@ class ObjectField:
             else:
                 poses = []
                 for t, state in simulation_states: 
-                    if not name in state.name:
+                    if not oname in state.name:
                         continue
-                    p = get_pose_from_state(name, state)
+                    p = get_pose_from_state(oname, state)
                     poses.append((t-t0, p))
                 new_obj['poses'] = sorted(poses)
                 new_obj['polygons'] = [None] * len(poses)

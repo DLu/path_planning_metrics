@@ -69,7 +69,6 @@ class RobotPath:
         self.other = collections.defaultdict(list)
         self.params = None
         self.features = path_analyze(self.filename)
-
         try:
             bag = rosbag.Bag(filename, 'r')
             for topic, msg, t in bag.read_messages():
@@ -106,14 +105,16 @@ class RobotPath:
 
             if 'nav_experiments' in self.params:
                 params = self.params['nav_experiments']['scenario']
+                name_map = self.params['nav_experiments']['spawn_names']
                 params['key'] = self.get_scenario_name()
                 self.scenario = Scenario(the_dict=params)
                 scenario_objects = self.scenario.get_objects()
             else:
                 # TODO: Hack for backward compatibility
                 scenario_objects = {}
+                name_map = {}
 
-            self.object_field = ObjectField(scenario_objects, self.obstacles, self.t0)
+            self.object_field = ObjectField(scenario_objects, name_map, self.obstacles, self.t0)
         except:
             sys.stderr.write("Cannot read bag file %s\n" % filename)
             self.valid = False
