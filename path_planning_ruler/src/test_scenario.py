@@ -8,6 +8,7 @@ from path_planning_ruler.move_base import *
 from path_planning_ruler.parameterization import *
 from path_planning_ruler.batch_arg_parser import parse_args
 from path_planning_ruler.utils import *
+from std_srvs.srv import *
 import collections
 import sys
 
@@ -16,6 +17,9 @@ if __name__=='__main__':
     rospy.init_node('test_scenario')
 
     list_of_args, should_text = parse_args()
+    print "Waiting for animator"
+    rospy.wait_for_service('/animator/reset')
+    resetter = rospy.ServiceProxy('/animator/reset', Empty)
 
     # Run the tests
     for args in list_of_args:
@@ -30,6 +34,7 @@ if __name__=='__main__':
                 g.spawn_robot_maybe()
                 scenario.spawn(g)
                 scenario.reset(g)
+                resetter()
 
                 raw_input("Press key to continue")
 

@@ -11,6 +11,7 @@ from path_planning_ruler.utils import *
 from twilio_ros import send_text
 import collections
 import socket
+from std_srvs.srv import *
 
 basedir = '/home/dlu/Desktop/path_data'
 
@@ -24,6 +25,10 @@ if __name__=='__main__':
 
     list_of_args, should_text = parse_args()
     stats = collections.defaultdict(int)
+    
+    print "Waiting for animator"
+    rospy.wait_for_service('/animator/reset')
+    resetter = rospy.ServiceProxy('/animator/reset', Empty)
 
     # Count Total Tests
     for args in list_of_args:
@@ -73,6 +78,7 @@ if __name__=='__main__':
                    
                     try:
                         scenario.reset(g)
+                        resetter()
 
                         move_base.start()
                         mb = MoveBaseClient(timeout=scenario.get_timeout())
