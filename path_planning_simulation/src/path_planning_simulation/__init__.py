@@ -6,6 +6,7 @@ from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
 from geometry_msgs.msg import Pose2D
 import rosnode
+from math import pi
 
 SET_STATE_NAME = '/gazebo/set_model_state'
 SPAWN_NAME = '/gazebo/spawn_gazebo_model'
@@ -22,6 +23,8 @@ def eval_s(val, params):
                 x = '%s.0'%x
             
             val = val.replace(param, x)
+    if 'pi' in val:
+        val = val.replace('pi', str(pi))
     try:                
         return eval(val)
     except NameError, e:
