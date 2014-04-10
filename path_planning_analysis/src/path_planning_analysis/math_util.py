@@ -22,6 +22,9 @@ def average(w):
     return sum(w)/len(w)
 
 def inv_average(a):
+    if 0.0 in a:
+        return float('inf')
+    
     return sum([1.0/x for x in a])/len(a)
 
 def inverse_scale(q):
