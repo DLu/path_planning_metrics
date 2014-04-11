@@ -12,6 +12,7 @@
   <include file="$(find path_planning_simulation)/launch/noarms.launch"/>
   <node name="contact_watcher" pkg="path_planning_simulation" type="contact_watcher.py" />
   <node name="people_publisher" pkg="path_planning_simulation" type="people_publisher.py" />
+  <node name="people_velocity" pkg="people_velocity_tracker" type="tracker.py" />
   <node name="animator" pkg="path_planning_simulation" type="animator.py" />
 
   <include file="$(find path_planning_simulation)/launch/move_core.launch">

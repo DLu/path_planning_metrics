@@ -4,7 +4,7 @@ import roslib; roslib.load_manifest('path_planning_simulation')
 import rospy
 import gazebo_msgs.msg
 from path_planning_analysis.translator import *
-from people_msgs.msg import People, Person
+from people_msgs.msg import PositionMeasurement, PositionMeasurementArray
 from geometry_msgs.msg import TransformStamped
 import tf
 
@@ -12,14 +12,14 @@ class PeoplePublisher:
     def __init__(self):
         rospy.init_node('people_publisher')
         self.sub = rospy.Subscriber('/simulation_state', gazebo_msgs.msg.ModelStates, self.model_state_cb)
-        self.pub = rospy.Publisher('/people', People)
+        self.pub = rospy.Publisher('/people_tracker_measurements', PositionMeasurementArray)
         self.tf = tf.Transformer()
 
     def model_state_cb(self, msg):
         self.names = set( rospy.get_param('/nav_experiments/people', []) )
         objects = rospy.get_param('/nav_experiments/scenario/objects', {})
 
-        people_list = People()
+        people_list = PositionMeasurementArray()
         people_list.header.stamp = rospy.Time.now()
         people_list.header.frame_id = '/map'
         for name, pose, twist in zip(msg.name, msg.pose, msg.twist):
@@ -28,15 +28,17 @@ class PeoplePublisher:
             if name not in self.names:
                 continue
 
-            p = Person()
+            p = PositionMeasurement()
             oname = name[:-10]
             p.name = oname
+            p.object_id = oname
+            p.reliability = 1.0
 
             properties = objects[oname]
             if 'movement' not in properties:
-                p.position.x = properties['xyz'][0]
-                p.position.y = properties['xyz'][1]
-                p.position.z = properties['xyz'][2]
+                p.pos.x = properties['xyz'][0]
+                p.pos.y = properties['xyz'][1]
+                p.pos.z = properties['xyz'][2]
             else:
                 trans = TransformStamped()
                 trans.header.frame_id = '/map'
@@ -55,14 +57,10 @@ class PeoplePublisher:
                 self.tf.setTransform(trans)
                 nt = self.tf.lookupTransform('/map', '/pos', rospy.Time(0))
                 
-                p.position.x = nt[0][0]
-                p.position.y = nt[0][1]
-                p.position.z = nt[0][2]
+                p.pos.x = nt[0][0]
+                p.pos.y = nt[0][1]
+                p.pos.z = nt[0][2]
 
-            p.velocity.x  = twist.linear.x
-            p.velocity.y  = twist.linear.y
-            p.velocity.z  = twist.linear.z
-            p.reliability = 1.0
             people_list.people.append(p)
         self.pub.publish(people_list)
 
