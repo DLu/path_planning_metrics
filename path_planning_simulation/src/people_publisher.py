@@ -33,6 +33,7 @@ class PeoplePublisher:
             p.name = oname
             p.object_id = oname
             p.reliability = 1.0
+            
 
             properties = objects[oname]
             if 'movement' not in properties:
@@ -60,7 +61,8 @@ class PeoplePublisher:
                 p.pos.x = nt[0][0]
                 p.pos.y = nt[0][1]
                 p.pos.z = nt[0][2]
-
+            p.header.stamp = people_list.header.stamp
+            p.header.frame_id = '/map'
             people_list.people.append(p)
         self.pub.publish(people_list)
 
