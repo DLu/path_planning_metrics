@@ -27,6 +27,7 @@ objects:
         type: box
         size: [.25, .45, 1.7]
         xyz: [L, hallwidth/4, 1.7/2]
+        class: person
         movement:
             - {pos: [0,0,0], t:  0}
             - {pos: [-L,0,0], t:  T}
