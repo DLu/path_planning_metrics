@@ -110,7 +110,7 @@ class GazeboHelper:
     def delete_model(self, name):
         response = self.delete_proxy(name)
         if not self.quiet:
-            rospy.loginfo("DeleteModel: %s | %s", "Success" if response.success else "Failure", response.status_message)
+            rospy.loginfo("%s | %s", response.status_message, name)
             
     def get_models(self):
         response = self.world_proxy()
