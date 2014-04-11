@@ -117,7 +117,11 @@ class Scenario:
 
     def unspawn(self, gazebo):
         for name in self.spawn_names:
-            gazebo.delete_model(name)
+            try:
+                gazebo.delete_model(name)
+            except rospy.service.ServiceException, e:
+                rospy.logerr("Didn't delete model %s: %s" % (name, str(e)) )
+
 
     def reset(self, gazebo):
         rospy.sleep(1.0)
