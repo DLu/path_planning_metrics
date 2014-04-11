@@ -6,7 +6,7 @@ from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
 from geometry_msgs.msg import Pose2D
 import rosnode
-from math import pi
+from math import pi, sin, cos
 
 SET_STATE_NAME = '/gazebo/set_model_state'
 SPAWN_NAME = '/gazebo/spawn_gazebo_model'
