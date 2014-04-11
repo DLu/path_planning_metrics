@@ -19,6 +19,12 @@ def get_status_message(collected):
     host = socket.gethostname()
     ready = collected['total']-collected['to_run']+collected['run']
     return "Ran %d/%d tests (%d/%d) on %s"%(collected['run'], collected['to_run'], ready, collected['total'], host)
+
+def delete_extra_models(gazebo):
+    for mod in gazebo.get_models():
+        if mod in ['plane1_model', 'pr2']:
+            continue
+        gazebo.delete_model(mod)
     
 if __name__=='__main__':
     rospy.init_node('batch_trials_script')
@@ -51,6 +57,9 @@ if __name__=='__main__':
         
     print "Attempting to run %d/%d tests"%(stats['to_run'], stats['total'])
 
+    g = GazeboHelper()
+    delete_extra_models(g)
+
     # Run the tests
     for args in list_of_args:
         parameterization = Parameterization(args.algorithm, args.scenario, args.variables, args.constants, basedir)
@@ -64,7 +73,7 @@ if __name__=='__main__':
                 if len(parameterization.parameterizations)>1:
                     rospy.loginfo( parameterization.to_string(p) )
 
-                g = GazeboHelper(args.quiet)
+                g.quiet = args.quiet
                 
                 try:
                     filename = parameterization.get_full_filename(p, i)
