@@ -105,7 +105,7 @@ class RobotPath:
 
             if 'nav_experiments' in self.params:
                 params = self.params['nav_experiments']['scenario']
-                name_map = self.params['nav_experiments']['spawn_names']
+                name_map = self.params['nav_experiments'].get('spawn_names', {})
                 params['key'] = self.get_scenario_name()
                 self.scenario = Scenario(the_dict=params)
                 scenario_objects = self.scenario.get_objects()
