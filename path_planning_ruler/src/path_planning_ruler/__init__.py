@@ -53,15 +53,24 @@ class MoveBaseClient:
         self.subscribers = []
 
         printed = False
-        while not self.ac.wait_for_server(rospy.Duration(5.0)) and not rospy.is_shutdown():
+        limit = rospy.Time.now() + rospy.Duration(30)
+        while not self.ac.wait_for_server(rospy.Duration(5.0)) and not rospy.is_shutdown() and rospy.Time.now() < limit:
             printed = True
             rospy.loginfo('Waiting for move_base server')
+            
+        if rospy.Time.now() >= limit:
+            self.ac = None
+            return
+
+        if rospy.is_shutdown():
+            self.ac = None
+            return
 
         if printed:
             rospy.loginfo('Got move_base server')
         
-        if rospy.is_shutdown():
-            exit(1)
+    def ready(self):
+        return self.ac is not None
 
     def addSubscription(self, topic, msg_type):
         self.subscriptions.append( (topic, msg_type) )
@@ -90,6 +99,8 @@ class MoveBaseClient:
         self.other_data.append( (rospy.Time.now(), topic, msg) )
 
     def goto(self, loc, debug=False):
+        if self.ac is None:
+            return []
         self.goal = loc
         q = quaternion_from_euler(0, 0, loc[2])
         goal = MoveBaseGoal()

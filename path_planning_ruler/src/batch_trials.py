@@ -67,12 +67,12 @@ if __name__=='__main__':
                 g = GazeboHelper(args.quiet)
                 
                 try:
-                    g.spawn_robot_maybe()
-                    scenario.spawn(g)
-
                     filename = parameterization.get_full_filename(p, i)
                     if os.path.exists(filename) and not args.clean:
                         continue
+                        
+                    g.spawn_robot_maybe()
+                    scenario.spawn(g)
 
                     rospy.loginfo('%s #%d/%d'%(scenario.key, i+1, args.n))
                    
@@ -82,6 +82,8 @@ if __name__=='__main__':
 
                         move_base.start()
                         mb = MoveBaseClient(timeout=scenario.get_timeout())
+                        if not mb.ready():
+                            continue
                         mb.load_subscriptions()
 
                         t = rospy.Time.now()
