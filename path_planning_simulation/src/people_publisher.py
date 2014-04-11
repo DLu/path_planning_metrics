@@ -5,12 +5,15 @@ import rospy
 import gazebo_msgs.msg
 from path_planning_analysis.translator import *
 from people_msgs.msg import People, Person
+from geometry_msgs.msg import TransformStamped
+import tf
 
 class PeoplePublisher:
     def __init__(self):
         rospy.init_node('people_publisher')
         self.sub = rospy.Subscriber('/simulation_state', gazebo_msgs.msg.ModelStates, self.model_state_cb)
         self.pub = rospy.Publisher('/people', People)
+        self.tf = tf.Transformer()
 
     def model_state_cb(self, msg):
         self.names = set( rospy.get_param('/nav_experiments/people', []) )
@@ -26,16 +29,35 @@ class PeoplePublisher:
                 continue
 
             p = Person()
+            oname = name[:-10]
             p.name = oname
 
-            oname = name[:-10]
             properties = objects[oname]
             if 'movement' not in properties:
                 p.position.x = properties['xyz'][0]
                 p.position.y = properties['xyz'][1]
                 p.position.z = properties['xyz'][2]
             else:
-                p.position = pose.position
+                trans = TransformStamped()
+                trans.header.frame_id = '/map'
+                trans.child_frame_id = '/start'
+                trans.transform.translation.x = properties['xyz'][0]
+                trans.transform.translation.y = properties['xyz'][1]
+                trans.transform.translation.z = properties['xyz'][2]
+                trans.transform.rotation.x = 0
+                trans.transform.rotation.y = 0
+                trans.transform.rotation.z = 0
+                trans.transform.rotation.w = 1
+                self.tf.setTransform(trans)
+                trans.header.frame_id = '/start'
+                trans.child_frame_id = '/pos'
+                trans.transform.translation = pose.position
+                self.tf.setTransform(trans)
+                nt = self.tf.lookupTransform('/map', '/pos', rospy.Time(0))
+                
+                p.position.x = nt[0][0]
+                p.position.y = nt[0][1]
+                p.position.z = nt[0][2]
 
             p.velocity.x  = twist.linear.x
             p.velocity.y  = twist.linear.y
