@@ -1,10 +1,10 @@
 vars:
-  start_i: {min: 0, max: 1, default: 0}
-  goal_i: {min: 0, max: 1, default: 0}
+  start_i: {min: 0, max: 4, default: 0}
+  goal_i: {min: 0, max: 4, default: 0}
 locations:
     - [0, 0, 3.14]   # chapel
     - [-4, 0, 3.14]  # chapel 2
-    - [-3.2, -18, 0] # room 1
-    - [.2, -18, 0]   # room 2
+    - [-2.2, -18, 3.1] # room 1
+    - [.2, -18, 3.1]   # room 2
     - [8.2, -18, 0]  # room 3
 timeout: 600

@@ -1,0 +1,25 @@
+start:  [-2,0,0]
+goal:   [2,0,0]
+objects:
+    top:
+        type: box
+        size: [2,2,.1]
+        xyz: [0,0,.5]
+    box1:
+        type: box
+        size: [.1,.1,.5]
+        xyz: [.8,.8,.25]
+    box2:
+        type: box
+        size: [.1,.1,.5]
+        xyz: [-.8,.8,.25]
+    box3:
+        type: box
+        size: [.1,.1,.5]
+        xyz: [-.8,-.8,.25]
+    box4:
+        type: box
+        size: [.1,.1,.5]
+        xyz: [.8,-.8,.25]
+
+

@@ -1,0 +1,6 @@
+vars:
+  gt: {min: 0, max: 3.1415, default: 0.}
+  tt: {min: -3.1415, max: 3.1415, default: 0.}
+  r: {min: 1.0, max: 4.0, default: 2.0}
+start: [0, 0, 0]
+goal:  [r*cos(gt), r*sin(gt), tt]
