@@ -1,0 +1,4 @@
+<launch>
+  <node name="gazebo" pkg="gazebo" type="gazebo" args="-u $(find gazebo_worlds)/worlds/empty.world" required="true" output="screen"/>
+  <node name="blank_map" pkg="map_server" type="map_server" args="$(find path_planning_data)/maps/office.yaml" />
+</launch>

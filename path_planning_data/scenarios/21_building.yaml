@@ -1,0 +1,67 @@
+vars:
+  wallwidth: {default: .1}
+  hallwidth: {default: 1.5}
+  H: {default: 2.0}
+  outer: {default: 10}
+  door: {default: 1.0}
+  swall1: {default: .5}
+  swall2: {default: 2.5}
+  depth: {default: 2.5}
+goal:   [1,0,0]
+objects:
+    northwall:
+        type: box
+        size: [wallwidth,outer,H]
+        xyz: [outer/2,0,H/2]
+    southwall:
+        type: box
+        size: [wallwidth,outer,H]
+        xyz: [-outer/2,0,H/2]
+    eastwall:
+        type: box
+        size: [outer,wallwidth,H]
+        xyz: [0,outer/2,H/2]
+    westwall:
+        type: box
+        size: [outer,wallwidth,H]
+        xyz: [0,-outer/2,H/2]
+    inorthwall: 
+        type: box
+        size: [wallwidth,outer-hallwidth*2,H]
+        xyz: [outer/2-hallwidth,0,H/2]
+    innerwall: 
+        type: box
+        size: [wallwidth,outer-hallwidth*2,H]
+        xyz: [-outer/2+hallwidth+depth,0,H/2]
+    isouthwall1: 
+        type: box
+        size: [wallwidth,swall1,H]
+        xyz: [-outer/2+hallwidth,-outer/2+hallwidth+swall1/2,H/2]
+    isouthwall2: 
+        type: box
+        size: [wallwidth,swall2,H]
+        xyz: [-outer/2+hallwidth,outer/2-hallwidth-swall2/2,H/2]
+    isouthwall3: 
+        type: box
+        size: [wallwidth,outer-hallwidth*2-door*2-swall1-swall2,H]
+        xyz: [-outer/2+hallwidth,-outer/2+hallwidth+swall1+door+(outer-hallwidth*2-door*2-swall1-swall2)/2,H/2]
+    ieastwall1:
+        type: box
+        size: [3.5,wallwidth,H]
+        xyz: [-1.75,outer/2-hallwidth,H/2]
+    ieastwall2:
+        type: box
+        size: [2.5,wallwidth,H]
+        xyz: [2.25,outer/2-hallwidth,H/2]
+    iwestwall1:
+        type: box
+        size: [5,wallwidth,H]
+        xyz: [-1,-outer/2+hallwidth,H/2]
+    iwestwall2:
+        type: box
+        size: [1.0,wallwidth,H]
+        xyz: [3.0,-outer/2+hallwidth,H/2]
+    innerwall2:
+        type: box
+        size: [2.5,wallwidth,H]
+        xyz: [-2.25,-1.0,H/2]

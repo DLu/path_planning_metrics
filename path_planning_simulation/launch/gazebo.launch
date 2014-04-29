@@ -1,12 +1,11 @@
 <launch>
-  <arg name="willow" default="0" />
+  <arg name="world" default="empty" />
 
   <node name="model_throttler" pkg="topic_tools" type="throttle" args="messages /gazebo/model_states 5 /simulation_state"/>
 
   <param name="/use_sim_time" value="true" />
 
-  <include file="$(find path_planning_simulation)/launch/willow.launch"     if="$(arg willow)"/>  
-  <include file="$(find path_planning_simulation)/launch/empty.launch"  unless="$(arg willow)"/>  
+  <include file="$(find path_planning_simulation)/launch/$(arg world).launch"/>  
 
   <!-- start pr2 robot -->
   <include file="$(find path_planning_simulation)/launch/noarms.launch"/>
